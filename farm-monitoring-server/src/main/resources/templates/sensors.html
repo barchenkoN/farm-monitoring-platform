@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Датчики')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <!-- Заголовок і панель інструментів -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1><i class="fas fa-microchip me-2"></i> Датчики</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Додати датчик
+                </button>
+                <div class="btn-group">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Експорт
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-1"></i> Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-1"></i> PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-1"></i> CSV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пошук та фільтрація -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="sensorSearch" class="form-control" placeholder="Пошук датчиків...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="fieldFilter">
+                            <option value="">Усі поля</option>
+                            <option th:each="field : ${fields}" th:value="${field.id}" th:text="${field.name}">Поле 1</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="typeFilter">
+                            <option value="">Усі типи</option>
+                            <option value="TEMPERATURE">Температура</option>
+                            <option value="MOISTURE">Вологість</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Усі статуси</option>
+                            <option value="ACTIVE">Активний</option>
+                            <option value="INACTIVE">Неактивний</option>
+                            <option value="WARNING">Попередження</option>
+                            <option value="ERROR">Помилка</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="batteryFilter">
+                            <option value="">Рівень батареї</option>
+                            <option value="high">Високий (> 60%)</option>
+                            <option value="medium">Середній (30-60%)</option>
+                            <option value="low">Низький (< 30%)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <span class="badge bg-secondary">Результати: <span id="searchResultCounter" th:text="${#lists.size(sensors) + ' з ' + #lists.size(sensors)}">25 з 25</span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Перемикач режиму відображення -->
+        <div class="d-flex justify-content-end mb-3">
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-secondary view-mode-btn active" data-mode="grid">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary view-mode-btn" data-mode="table">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Режим відображення: плитки -->
+        <div id="grid-view" class="row">
+            <div th:each="sensor : ${sensors}" class="col-md-3 mb-4 searchable-item" 
+                 th:data-field="${sensor.fieldId}" th:data-type="${sensor.type}" th:data-status="${sensor.status}"
+                 th:data-battery="${sensor.batteryLevel >= 60 ? 'high' : (sensor.batteryLevel >= 30 ? 'medium' : 'low')}">
+                <div th:class="${'card sensor-card ' + (sensor.type == 'TEMPERATURE' ? 'temperature' : 'moisture')}">
+                    <!-- Іконка типу датчика -->
+                    <div th:if="${sensor.type == 'TEMPERATURE'}" class="sensor-icon">
+                        <i class="fas fa-thermometer-half text-temperature"></i>
+                    </div>
+                    <div th:if="${sensor.type == 'MOISTURE'}" class="sensor-icon">
+                        <i class="fas fa-tint text-moisture"></i>
+                    </div>
+                    
+                    <!-- Статус датчика -->
+                    <span th:if="${sensor.status == 'ACTIVE'}" class="badge bg-success card-badge">Активний</span>
+                    <span th:if="${sensor.status == 'INACTIVE'}" class="badge bg-secondary card-badge">Неактивний</span>
+                    <span th:if="${sensor.status == 'WARNING'}" class="badge bg-warning card-badge">Попередження</span>
+                    <span th:if="${sensor.status == 'ERROR'}" class="badge bg-danger card-badge">Помилка</span>
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span th:class="${'status-indicator ' + 
+                            (sensor.status == 'ACTIVE' ? 'status-active' : 
+                            (sensor.status == 'WARNING' ? 'status-warning' : 
+                            (sensor.status == 'ERROR' ? 'status-error' : 'status-inactive')))}"></span>
+                            <span th:text="${sensor.name}">Датчик</span>
+                        </h5>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-map-marker-alt me-1"></i> 
+                                <span th:text="${'Поле: ' + sensor.fieldName}">Поле</span>
+                            </small>
+                        </p>
+                        
+                        <!-- Поточні показники -->
+                        <div th:if="${latestReadings != null and latestReadings.containsKey(sensor.id)}">
+                            <div th:with="reading=${latestReadings.get(sensor.id)}">
+                                <p th:if="${sensor.type == 'TEMPERATURE'}" class="fs-4 text-temperature mb-1">
+                                    <strong th:text="${reading.value + ' ' + reading.unit}">22.5 °C</strong>
+                                </p>
+                                <p th:if="${sensor.type == 'MOISTURE'}" class="fs-4 text-moisture mb-1">
+                                    <strong th:text="${reading.value + ' ' + reading.unit}">45.2 %</strong>
+                                </p>
+                                <p class="text-muted mb-1">
+                                    <small th:text="${'Оновлено: ' + #temporals.format(reading.timestamp, 'HH:mm:ss')}">12:34:56</small>
+                                </p>
+                            </div>
+                        </div>
+                        <div th:unless="${latestReadings != null and latestReadings.containsKey(sensor.id)}">
+                            <p class="text-muted">Немає даних</p>
+                        </div>
+                        
+                        <!-- Рівень заряду батареї -->
+                        <div class="battery-indicator mt-2">
+                            <div class="progress">
+                                <div th:class="${'progress-bar battery-level ' + 
+                                                (sensor.batteryLevel >= 60 ? 'bg-success' : 
+                                                (sensor.batteryLevel >= 30 ? 'bg-warning' : 'bg-danger'))}"
+                                    role="progressbar"
+                                    th:style="${'width: ' + sensor.batteryLevel + '%'}"
+                                    th:aria-valuenow="${sensor.batteryLevel}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                    <span class="battery-text" th:text="${sensor.batteryLevel + '%'}">85%</span>
+                                </div>
+                            </div>
+                            <small class="d-block text-muted mt-1">
+                                <i class="fas fa-battery-three-quarters me-1"></i> Заряд батареї
+                            </small>
+                        </div>
+                        
+                        <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="btn btn-outline-primary btn-sm mt-3">
+                            <i class="fas fa-chart-line me-1"></i> Деталі
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Режим відображення: таблиця -->
+        <div id="table-view" class="row d-none">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Назва</th>
+                                        <th scope="col">Тип</th>
+                                        <th scope="col">Поле</th>
+                                        <th scope="col">Статус</th>
+                                        <th scope="col">Останні показники</th>
+                                        <th scope="col">Заряд</th>
+                                        <th scope="col">Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sensor : ${sensors}" class="searchable-row"
+                                        th:data-field="${sensor.fieldId}" th:data-type="${sensor.type}" th:data-status="${sensor.status}"
+                                        th:data-battery="${sensor.batteryLevel >= 60 ? 'high' : (sensor.batteryLevel >= 30 ? 'medium' : 'low')}">
+                                        <td th:text="${sensor.id}">1</td>
+                                        <td>
+                                            <span th:class="${'status-indicator ' + 
+                                                (sensor.status == 'ACTIVE' ? 'status-active' : 
+                                                (sensor.status == 'WARNING' ? 'status-warning' : 
+                                                (sensor.status == 'ERROR' ? 'status-error' : 'status-inactive')))}"></span>
+                                            <span th:text="${sensor.name}">Датчик</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sensor.type == 'TEMPERATURE'}" class="badge bg-danger">
+                                                <i class="fas fa-thermometer-half me-1"></i> Температура
+                                            </span>
+                                            <span th:if="${sensor.type == 'MOISTURE'}" class="badge bg-info">
+                                                <i class="fas fa-tint me-1"></i> Вологість
+                                            </span>
+                                        </td>
+                                        <td th:text="${sensor.fieldName}">Поле 1</td>
+                                        <td>
+                                            <span th:if="${sensor.status == 'ACTIVE'}" class="badge bg-success">Активний</span>
+                                            <span th:if="${sensor.status == 'INACTIVE'}" class="badge bg-secondary">Неактивний</span>
+                                            <span th:if="${sensor.status == 'WARNING'}" class="badge bg-warning">Попередження</span>
+                                            <span th:if="${sensor.status == 'ERROR'}" class="badge bg-danger">Помилка</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${latestReadings != null and latestReadings.containsKey(sensor.id)}"
+                                                  th:with="reading=${latestReadings.get(sensor.id)}"
+                                                  th:text="${reading.value + ' ' + reading.unit}">22.5 °C</span>
+                                            <span th:unless="${latestReadings != null and latestReadings.containsKey(sensor.id)}"
+                                                  class="text-muted">Немає даних</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 10px; width: 80px;">
+                                                <div th:class="${'progress-bar ' + 
+                                                            (sensor.batteryLevel >= 60 ? 'bg-success' : 
+                                                            (sensor.batteryLevel >= 30 ? 'bg-warning' : 'bg-danger'))}"
+                                                    role="progressbar"
+                                                    th:style="${'width: ' + sensor.batteryLevel + '%'}"
+                                                    th:aria-valuenow="${sensor.batteryLevel}"
+                                                    aria-valuemin="0"
+                                                    aria-valuemax="100"></div>
+                                            </div>
+                                            <small th:text="${sensor.batteryLevel + '%'}">85%</small>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-chart-line"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Повідомлення про відсутність даних -->
+        <div class="row" th:if="${sensors == null || sensors.isEmpty()}">
+            <div class="col">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <h4>Немає доступних датчиків</h4>
+                    <p>Додайте перший датчик, натиснувши кнопку "Додати датчик" вгорі сторінки.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пагінація -->
+        <div class="row mt-4" th:if="${sensors != null && !sensors.isEmpty()}">
+            <div class="col">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Попередня</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Наступна</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для повідомлень -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Підвал -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Перемикач режиму відображення (плитки/таблиця)
+            const viewModeButtons = document.querySelectorAll('.view-mode-btn');
+            const gridView = document.getElementById('grid-view');
+            const tableView = document.getElementById('table-view');
+            
+            viewModeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Зняття активного класу з усіх кнопок
+                    viewModeButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Додавання активного класу до натиснутої кнопки
+                    this.classList.add('active');
+                    
+                    // Перемикання режиму відображення
+                    const mode = this.getAttribute('data-mode');
+                    
+                    if (mode === 'grid') {
+                        gridView.classList.remove('d-none');
+                        tableView.classList.add('d-none');
+                        localStorage.setItem('sensorsViewMode', 'grid');
+                    } else {
+                        gridView.classList.add('d-none');
+                        tableView.classList.remove('d-none');
+                        localStorage.setItem('sensorsViewMode', 'table');
+                    }
+                });
+            });
+            
+            // Перевірка збереженого режиму відображення
+            const savedViewMode = localStorage.getItem('sensorsViewMode');
+            if (savedViewMode === 'table') {
+                viewModeButtons.forEach(btn => {
+                    if (btn.getAttribute('data-mode') === 'table') {
+                        btn.click();
+                    }
+                });
+            }
+            
+            // Пошук і фільтрація
+            const sensorSearch = document.getElementById('sensorSearch');
+            const fieldFilter = document.getElementById('fieldFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const batteryFilter = document.getElementById('batteryFilter');
+            
+            function filterSensors() {
+                const searchText = sensorSearch.value.toLowerCase();
+                const fieldValue = fieldFilter.value;
+                const typeValue = typeFilter.value;
+                const statusValue = statusFilter.value;
+                const batteryValue = batteryFilter.value;
+                
+                const sensors = document.querySelectorAll('.searchable-item');
+                const sensorsTable = document.querySelectorAll('.searchable-row');
+                
+                function applyFilter(elements) {
+                    elements.forEach(element => {
+                        const elementText = element.textContent.toLowerCase();
+                        const elementField = element.getAttribute('data-field');
+                        const elementType = element.getAttribute('data-type');
+                        const elementStatus = element.getAttribute('data-status');
+                        const elementBattery = element.getAttribute('data-battery');
+                        
+                        const matchesSearch = searchText === '' || elementText.includes(searchText);
+                        const matchesField = fieldValue === '' || elementField === fieldValue;
+                        const matchesType = typeValue === '' || elementType === typeValue;
+                        const matchesStatus = statusValue === '' || elementStatus === statusValue;
+                        const matchesBattery = batteryValue === '' || elementBattery === batteryValue;
+                        
+                        if (matchesSearch && matchesField && matchesType && matchesStatus && matchesBattery) {
+                            element.style.display = '';
+                        } else {
+                            element.style.display = 'none';
+                        }
+                    });
+                }
+                
+                // Застосування фільтрів до обох режимів перегляду
+                applyFilter(sensors);
+                applyFilter(sensorsTable);
+                
+                // Оновлення лічильника видимих елементів
+                const visibleCount = document.querySelectorAll('.searchable-item:not([style*="display: none"])').length;
+                const totalCount = document.querySelectorAll('.searchable-item').length;
+                document.getElementById('searchResultCounter').textContent = `${visibleCount} з ${totalCount}`;
+                
+                if (searchText || fieldValue || typeValue || statusValue || batteryValue) {
+                    showToast(`Відфільтровано: ${visibleCount} з ${totalCount} датчиків`, 'info');
+                }
+            }
+            
+            if (sensorSearch) {
+                sensorSearch.addEventListener('input', filterSensors);
+            }
+            
+            if (fieldFilter) {
+                fieldFilter.addEventListener('change', filterSensors);
+            }
+            
+            if (typeFilter) {
+                typeFilter.addEventListener('change', filterSensors);
+            }
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterSensors);
+            }
+            
+            if (batteryFilter) {
+                batteryFilter.addEventListener('change', filterSensors);
+            }
+        });
+    </script>
+</body>
+</html>

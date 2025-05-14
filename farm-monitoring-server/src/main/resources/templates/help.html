@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Довідка')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <!-- Заголовок сторінки -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1><i class="fas fa-question-circle me-2"></i> Довідкова система</h1>
+                <p class="text-muted">Дізнайтеся, як ефективно використовувати платформу моніторингу фермерських операцій.</p>
+            </div>
+        </div>
+
+        <!-- Головні розділи -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-4">
+                <div class="card help-category-card">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-3">
+                            <i class="fas fa-home fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Початок роботи</h5>
+                        <p class="card-text">Основи налаштування та використання платформи</p>
+                        <a href="#getting-started" class="btn btn-primary stretched-link">Перейти</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card help-category-card">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-3">
+                            <i class="fas fa-microchip fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Робота з датчиками</h5>
+                        <p class="card-text">Як керувати і налаштовувати датчики</p>
+                        <a href="#sensors" class="btn btn-primary stretched-link">Перейти</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card help-category-card">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-3">
+                            <i class="fas fa-map-marked-alt fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Управління полями</h5>
+                        <p class="card-text">Організація полів та моніторинг стану</p>
+                        <a href="#fields" class="btn btn-primary stretched-link">Перейти</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card help-category-card">
+                    <div class="card-body text-center">
+                        <div class="category-icon mb-3">
+                            <i class="fas fa-chart-line fa-3x"></i>
+                        </div>
+                        <h5 class="card-title">Аналітика та звіти</h5>
+                        <p class="card-text">Як аналізувати зібрані дані</p>
+                        <a href="#analytics" class="btn btn-primary stretched-link">Перейти</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Акордеон з детальною інформацією -->
+        <div class="accordion" id="helpAccordion">
+            <!-- Початок роботи -->
+            <div class="accordion-item" id="getting-started">
+                <h2 class="accordion-header" id="headingGettingStarted">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGettingStarted" aria-expanded="true" aria-controls="collapseGettingStarted">
+                        <i class="fas fa-home me-2"></i> Початок роботи
+                    </button>
+                </h2>
+                <div id="collapseGettingStarted" class="accordion-collapse collapse show" aria-labelledby="headingGettingStarted" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Реєстрація в системі</h4>
+                                <p>Для початку роботи з системою, адміністратор повинен створити обліковий запис для користувача:</p>
+                                <ol>
+                                    <li>Зверніться до системного адміністратора для отримання облікового запису</li>
+                                    <li>Увійдіть в систему за допомогою отриманих облікових даних</li>
+                                    <li>Змініть тимчасовий пароль на свій власний</li>
+                                </ol>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Пароль повинен містити мінімум 8 символів, включаючи літери, цифри та спеціальні символи.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Інтерфейс панелі керування</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <img src="/img/help/dashboard-overview.jpg" alt="Огляд панелі керування" class="img-fluid rounded mb-3">
+                                        <p>Панель керування надає доступ до всіх основних функцій системи. Основні розділи доступні через бічне меню:</p>
+                                        <ul>
+                                            <li><strong>Дашборд</strong> - загальний огляд стану ферм</li>
+                                            <li><strong>Датчики</strong> - управління датчиками</li>
+                                            <li><strong>Поля</strong> - перегляд і налаштування полів</li>
+                                            <li><strong>Аналітика</strong> - детальний аналіз зібраних даних</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h4>Налаштування профілю користувача</h4>
+                        <p>Після першого входу в систему рекомендується налаштувати свій профіль:</p>
+                        <ul>
+                            <li>Натисніть на ім'я користувача у верхньому правому куті</li>
+                            <li>Виберіть "Налаштування профілю"</li>
+                            <li>Заповніть інформацію та налаштуйте сповіщення</li>
+                        </ul>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Відео-інструкція: Початок роботи</h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-video fa-4x mb-3 text-muted"></i>
+                                        <p>Перегляньте відео-інструкцію, щоб швидко ознайомитися з основними функціями системи</p>
+                                        <button class="btn btn-primary mt-2" disabled>
+                                            <i class="fas fa-play me-1"></i> Дивитись відео
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Часті питання</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="accordion" id="faqGettingStarted">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="headingOne">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                                        Як змінити мову інтерфейсу?
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faqGettingStarted">
+                                                    <div class="accordion-body">
+                                                        Для зміни мови інтерфейсу перейдіть у розділ "Налаштування профілю" і виберіть бажану мову зі списку доступних.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header" id="headingTwo">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                        Що робити, якщо я забув пароль?
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqGettingStarted">
+                                                    <div class="accordion-body">
+                                                        На сторінці входу натисніть "Забули пароль?" і слідуйте інструкціям. Вам потрібно буде ввести електронну пошту, прив'язану до вашого облікового запису.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Робота з датчиками -->
+            <div class="accordion-item" id="sensors">
+                <h2 class="accordion-header" id="headingSensors">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSensors" aria-expanded="false" aria-controls="collapseSensors">
+                        <i class="fas fa-microchip me-2"></i> Робота з датчиками
+                    </button>
+                </h2>
+                <div id="collapseSensors" class="accordion-collapse collapse" aria-labelledby="headingSensors" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Типи датчиків</h4>
+                                <p>В системі використовуються різні типи датчиків для моніторингу умов на фермі:</p>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5><i class="fas fa-thermometer-half text-danger me-2"></i> Температурні датчики</h5>
+                                        <p>Вимірюють температуру повітря або ґрунту в градусах Цельсія. Ідеально підходять для контролю умов зростання рослин.</p>
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i> Робочий діапазон: від -40°C до +85°C
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5><i class="fas fa-tint text-primary me-2"></i> Датчики вологості</h5>
+                                        <p>Вимірюють вологість ґрунту у відсотках. Допомагають оптимізувати полив і запобігти пересиханню або перезволоженню.</p>
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i> Робочий діапазон: від 0% до 100%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Інтерпретація даних датчиків</h4>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Стан батареї датчика</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Система відображає стан заряду батареї для кожного датчика:</p>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="me-3">
+                                                <div class="progress" style="width: 100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%">85%</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-success">Хороший</span> 60-100%
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="me-3">
+                                                <div class="progress" style="width: 100px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 45%">45%</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-warning">Середній</span> 30-59%
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="progress" style="width: 100px;">
+                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 15%">15%</div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-danger">Критичний</span> 0-29%
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Статус підключення</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Статус підключення датчика відображається за допомогою кольорових індикаторів:</p>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="status-indicator status-active me-2"></div>
+                                            <div>
+                                                <span class="badge bg-success">Активний</span> 
+                                                Датчик передає дані регулярно
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="status-indicator status-warning me-2"></div>
+                                            <div>
+                                                <span class="badge bg-warning">Попередження</span>
+                                                Датчик пропускає деякі передачі даних
+                                            </div>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="status-indicator status-inactive me-2"></div>
+                                            <div>
+                                                <span class="badge bg-danger">Неактивний</span>
+                                                Датчик не передає дані більше 24 годин
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h4>Додавання нового датчика</h4>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <ol>
+                                    <li>Перейдіть на сторінку "Датчики" в головному меню</li>
+                                    <li>Натисніть кнопку "Додати новий датчик"</li>
+                                    <li>Заповніть необхідні поля у формі:
+                                        <ul>
+                                            <li>Серійний номер датчика (вказаний на пристрої)</li>
+                                            <li>Тип датчика (температура/вологість)</li>
+                                            <li>Назва (для зручної ідентифікації)</li>
+                                            <li>Поле, до якого належить датчик</li>
+                                            <li>Координати розташування (за необхідності)</li>
+                                        </ul>
+                                    </li>
+                                    <li>Натисніть "Зберегти" для додавання датчика в систему</li>
+                                </ol>
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i> Важливо: Переконайтеся, що серійний номер датчика введено правильно. Це унікальний ідентифікатор, який не можна буде змінити після активації.
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Бездротове підключення</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Після додавання датчика в систему, необхідно активувати його бездротове підключення:</p>
+                                        <ol>
+                                            <li>Вставте батареї в датчик</li>
+                                            <li>Натисніть і утримуйте кнопку перезавантаження на 5 секунд</li>
+                                            <li>Дочекайтеся, поки індикатор почне блимати зеленим</li>
+                                            <li>Датчик автоматично підключиться до системи протягом 5 хвилин</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Управління полями -->
+            <div class="accordion-item" id="fields">
+                <h2 class="accordion-header" id="headingFields">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFields" aria-expanded="false" aria-controls="collapseFields">
+                        <i class="fas fa-map-marked-alt me-2"></i> Управління полями
+                    </button>
+                </h2>
+                <div id="collapseFields" class="accordion-collapse collapse" aria-labelledby="headingFields" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Додавання нового поля</h4>
+                                <p>Для додавання нового поля в систему:</p>
+                                <ol>
+                                    <li>Перейдіть на сторінку "Поля" в головному меню</li>
+                                    <li>Натисніть кнопку "Додати нове поле"</li>
+                                    <li>Заповніть інформацію про поле:
+                                        <ul>
+                                            <li>Назва поля</li>
+                                            <li>Ферма, до якої належить поле</li>
+                                            <li>Площа (в гектарах)</li>
+                                            <li>Тип ґрунту</li>
+                                            <li>Поточна культура</li>
+                                            <li>Координати поля (за необхідності)</li>
+                                        </ul>
+                                    </li>
+                                    <li>Натисніть "Зберегти"</li>
+                                </ol>
+                                
+                                <div class="card mt-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Визначення меж поля</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Система дозволяє визначити точні межі поля на карті:</p>
+                                        <ol>
+                                            <li>На сторінці поля натисніть "Редагувати межі"</li>
+                                            <li>Використовуйте інструменти малювання для окреслення меж поля на карті</li>
+                                            <li>Натисніть "Зберегти межі"</li>
+                                        </ol>
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i> Визначення точних меж покращує візуалізацію даних та дозволяє створювати теплові карти.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Оптимальне розміщення датчиків</h4>
+                                <p>Для ефективного моніторингу всього поля важливо правильно розмістити датчики:</p>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Рекомендації з розміщення</h5>
+                                        <ul>
+                                            <li><strong>Рівномірне покриття</strong> - розміщуйте датчики на рівних відстанях один від одного</li>
+                                            <li><strong>Врахування рельєфу</strong> - розміщуйте додаткові датчики в низинах і на підвищеннях</li>
+                                            <li><strong>Враховуйте особливості поля</strong> - ділянки з різними типами ґрунту потребують окремих датчиків</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Щільність розміщення датчиків</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Рекомендована кількість датчиків залежить від площі поля та однорідності ґрунту:</p>
+                                        <table class="table table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Площа поля</th>
+                                                    <th>Мінімальна кількість датчиків</th>
+                                                    <th>Оптимальна кількість датчиків</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>до 10 га</td>
+                                                    <td>3-5</td>
+                                                    <td>5-10</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>10-50 га</td>
+                                                    <td>5-10</td>
+                                                    <td>10-20</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>50-100 га</td>
+                                                    <td>10-20</td>
+                                                    <td>20-40</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>більше 100 га</td>
+                                                    <td>20+</td>
+                                                    <td>40+</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mt-3">
+                                    <div class="card-body">
+                                        <img src="/img/help/field-sensors-placement.jpg" alt="Схема розміщення датчиків" class="img-fluid rounded">
+                                        <p class="text-center text-muted mt-2">Приклад оптимального розміщення датчиків на полі</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Аналітика та звіти -->
+            <div class="accordion-item" id="analytics">
+                <h2 class="accordion-header" id="headingAnalytics">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAnalytics" aria-expanded="false" aria-controls="collapseAnalytics">
+                        <i class="fas fa-chart-line me-2"></i> Аналітика та звіти
+                    </button>
+                </h2>
+                <div id="collapseAnalytics" class="accordion-collapse collapse" aria-labelledby="headingAnalytics" data-bs-parent="#helpAccordion">
+                    <div class="accordion-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Робота з аналітичними даними</h4>
+                                <p>Система надає потужні інструменти для аналізу даних, зібраних з датчиків:</p>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Основні функції аналітики</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul>
+                                            <li><strong>Фільтрація даних</strong> - за типом датчиків, періодом часу, полями та фермами</li>
+                                            <li><strong>Порівняльний аналіз</strong> - порівняння показників різних полів або періодів</li>
+                                            <li><strong>Тренди та прогнози</strong> - аналіз динаміки показників та прогнозування майбутніх значень</li>
+                                            <li><strong>Теплові карти</strong> - візуалізація розподілу показників по всій площі поля</li>
+                                            <li><strong>Експорт даних</strong> - збереження даних у форматах Excel, PDF, CSV</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Інтерпретація графіків</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Система використовує різні типи графіків для відображення даних:</p>
+                                        <ul>
+                                            <li><strong>Лінійні графіки</strong> - для відображення трендів і динаміки показників у часі</li>
+                                            <li><strong>Стовпчасті діаграми</strong> - для порівняння значень різних датчиків або полів</li>
+                                            <li><strong>Кругові діаграми</strong> - для відображення співвідношень між різними категоріями даних</li>
+                                            <li><strong>Гістограми</strong> - для аналізу розподілу значень</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Створення звітів</h4>
+                                <p>Система дозволяє створювати детальні звіти для подальшого аналізу та прийняття рішень:</p>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Типи звітів</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul>
+                                            <li><strong>Щоденні звіти</strong> - містять інформацію про показники за останні 24 години</li>
+                                            <li><strong>Тижневі звіти</strong> - надають аналіз трендів за тиждень</li>
+                                            <li><strong>Місячні звіти</strong> - комплексний аналіз показників за місяць</li>
+                                            <li><strong>Звіти за періодом</strong> - дозволяють обрати будь-який період для аналізу</li>
+                                            <li><strong>Порівняльні звіти</strong> - порівняння показників різних полів або періодів</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Як створити звіт</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ol>
+                                            <li>Перейдіть на сторінку "Аналітика" в головному меню</li>
+                                            <li>Налаштуйте фільтри для відображення потрібних даних:
+                                                <ul>
+                                                    <li>Виберіть період аналізу</li>
+                                                    <li>Виберіть ферму та поле (за необхідності)</li>
+                                                    <li>Виберіть тип даних (температура, вологість або всі)</li>
+                                                </ul>
+                                            </li>
+                                            <li>Натисніть "Оновити дані" для застосування фільтрів</li>
+                                            <li>Натисніть "Експорт" і виберіть потрібний формат (Excel, PDF, CSV)</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">Налаштування регулярних звітів</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Система дозволяє налаштувати автоматичну генерацію та розсилку звітів:</p>
+                                        <ol>
+                                            <li>На сторінці "Аналітика" натисніть "Налаштування звітів"</li>
+                                            <li>Натисніть "Додати новий регулярний звіт"</li>
+                                            <li>Виберіть тип звіту та періодичність (щодня, щотижня, щомісяця)</li>
+                                            <li>Налаштуйте фільтри даних для звіту</li>
+                                            <li>Вкажіть адреси електронної пошти для розсилки</li>
+                                            <li>Натисніть "Зберегти"</li>
+                                        </ol>
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i> Звіти будуть автоматично генеруватися та надсилатися на вказані адреси електронної пошти.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Технічна підтримка -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-headset me-2"></i> Технічна підтримка</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <div class="support-icon me-3">
+                                <i class="fas fa-envelope fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5>Email підтримка</h5>
+                                <p class="mb-0">support@farmmonitoring.com</p>
+                                <small class="text-muted">Відповідь протягом 24 годин</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <div class="support-icon me-3">
+                                <i class="fas fa-phone-alt fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5>Телефон підтримки</h5>
+                                <p class="mb-0">+380 44 123 45 67</p>
+                                <small class="text-muted">Пн-Пт, 9:00 - 18:00</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="support-icon me-3">
+                                <i class="fas fa-comments fa-2x text-primary"></i>
+                            </div>
+                            <div>
+                                <h5>Онлайн чат</h5>
+                                <button class="btn btn-sm btn-outline-primary">Почати чат</button>
+                                <small class="d-block text-muted">Миттєва підтримка</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підвал -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Прокрутка до розділу при переході за посиланням
+            const scrollToSection = (id) => {
+                const element = document.querySelector(id);
+                if (element) {
+                    // Відкриваємо акордеон, якщо він закритий
+                    const collapseElement = element.querySelector('.accordion-collapse');
+                    const button = element.querySelector('.accordion-button');
+                    
+                    if (collapseElement && button && collapseElement.classList.contains('collapse')) {
+                        button.click();
+                    }
+                    
+                    // Прокручуємо до елемента з плавною анімацією
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+            
+            // Обробка кліків на посилання категорій
+            const categoryLinks = document.querySelectorAll('.help-category-card a');
+            categoryLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const sectionId = this.getAttribute('href');
+                    scrollToSection(sectionId);
+                });
+            });
+            
+            // Перевірка хеша URL при завантаженні сторінки
+            if (window.location.hash) {
+                setTimeout(() => {
+                    scrollToSection(window.location.hash);
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

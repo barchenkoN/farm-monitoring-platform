@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Панель моніторингу')">
+</head>
+<body class="page-transition">
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="container mt-4">
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1>Панель моніторингу</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync-alt me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button id="refreshDataButton" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-sync-alt me-1"></i> Оновити
+                    <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+                <div class="input-group d-inline-flex w-auto">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Пошук датчиків...">
+                    <button class="btn btn-outline-secondary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-microchip fa-2x text-primary mb-3"></i>
+                        <h2 class="fs-1 fw-bold" th:text="${sensors.size()}">8</h2>
+                        <h5 class="text-muted">Усі датчики</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                        <h2 class="fs-1 fw-bold" th:text="${activeCount ?: (sensors.size() * 0.85)}">7</h2>
+                        <h5 class="text-muted">Активні датчики</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-thermometer-half fa-2x text-temperature mb-3"></i>
+                        <h2 class="fs-1 fw-bold" th:text="${avgTemperature ?: '22.5 °C'}">22.5 °C</h2>
+                        <h5 class="text-muted">Сер. температура</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-tint fa-2x text-moisture mb-3"></i>
+                        <h2 class="fs-1 fw-bold" th:text="${avgMoisture ?: '45.8 %'}">45.8 %</h2>
+                        <h5 class="text-muted">Сер. вологість</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microchip me-2"></i> Датчики
+                        </h5>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-filter me-1"></i> Фільтр
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="filterDropdown">
+                                <li><a class="dropdown-item" href="#" data-filter="all">Усі датчики</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="temperature">Температура</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="moisture">Вологість</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" data-filter="active">Активні</a></li>
+                                <li><a class="dropdown-item" href="#" data-filter="inactive">Неактивні</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="sensorsContainer">
+                            <div th:each="sensor : ${sensors}" class="col-md-3 mb-4 sensor-item" th:data-type="${sensor.type.toLowerCase()}" th:data-status="${sensor.status.toLowerCase()}">
+                                <div th:class="${'card sensor-card h-100 ' + (sensor.type == 'TEMPERATURE' ? 'bg-temperature-light' : 'bg-moisture-light')}">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <h5 class="card-title mb-0" th:text="${sensor.name}"></h5>
+                                            <span th:if="${sensor.status == 'ACTIVE'}" class="status-indicator status-active" title="Активний"></span>
+                                            <span th:if="${sensor.status == 'INACTIVE'}" class="status-indicator status-inactive" title="Неактивний"></span>
+                                        </div>
+                                        <p class="card-text">
+                                            <span th:if="${sensor.type == 'TEMPERATURE'}" class="badge bg-danger">
+                                                <i class="fas fa-thermometer-half me-1"></i> Температура
+                                            </span>
+                                            <span th:if="${sensor.type == 'MOISTURE'}" class="badge bg-info">
+                                                <i class="fas fa-tint me-1"></i> Вологість
+                                            </span>
+                                        </p>
+                                        
+                                        <div class="progress mb-2" style="height: 10px;">
+                                            <div class="progress-bar" role="progressbar" th:style="'width: ' + ${sensor.batteryLevel} + '%'" 
+                                                 th:classappend="${sensor.batteryLevel < 20 ? 'bg-danger' : (sensor.batteryLevel < 50 ? 'bg-warning' : 'bg-success')}"
+                                                 th:aria-valuenow="${sensor.batteryLevel}" aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <p class="card-text small text-muted mb-3">
+                                            <i class="fas fa-battery-half me-1"></i> Заряд батареї: <span th:text="${sensor.batteryLevel + '%'}"></span>
+                                        </p>
+                                        
+                                        <a th:href="@{'/web/sensor/' + ${sensor.id}}" class="btn btn-sm btn-primary w-100">
+                                            <i class="fas fa-info-circle me-1"></i> Детальніше
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Підвал сторінки -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+    
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Пошук по датчиках
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', filterSensors);
+            
+            // Фільтрація по типу
+            const filterLinks = document.querySelectorAll('[data-filter]');
+            filterLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filterType = this.getAttribute('data-filter');
+                    filterSensorsByType(filterType);
+                    
+                    // Оновлення активного фільтра в дропдауні
+                    document.getElementById('filterDropdown').innerHTML = '<i class="fas fa-filter me-1"></i> ' + 
+                        (filterType === 'all' ? 'Усі датчики' : 
+                         filterType === 'temperature' ? 'Температура' : 
+                         filterType === 'moisture' ? 'Вологість' : 
+                         filterType === 'active' ? 'Активні' :
+                         'Неактивні');
+                });
+            });
+            
+            // Кнопка оновлення
+            const refreshBtn = document.getElementById('refreshDataButton');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    // Показати спіннер
+                    const spinner = document.getElementById('refreshSpinner');
+                    spinner.classList.remove('d-none');
+                    
+                    // Відобразити оверлей завантаження
+                    document.querySelector('.loading-overlay').classList.add('show');
+                    
+                    // Імітація завантаження даних (в реальному додатку тут був би AJAX)
+                    setTimeout(function() {
+                        // Оновлення часу
+                        const timestamp = document.getElementById('dataTimestamp');
+                        if (timestamp) {
+                            const now = new Date();
+                            timestamp.textContent = now.toLocaleDateString('uk-UA') + ' ' + now.toLocaleTimeString('uk-UA');
+                        }
+                        
+                        // Сховати спіннер
+                        spinner.classList.add('d-none');
+                        
+                        // Сховати оверлей завантаження
+                        document.querySelector('.loading-overlay').classList.remove('show');
+                        
+                        // Показати тост про успішне оновлення
+                        showToast('Дані успішно оновлено', 'success');
+                    }, 1000);
+                });
+            }
+            
+            // Функція для фільтрації датчиків за текстом пошуку
+            function filterSensors() {
+                const searchText = searchInput.value.toLowerCase();
+                const sensors = document.querySelectorAll('.sensor-item');
+                
+                sensors.forEach(sensor => {
+                    const sensorName = sensor.querySelector('.card-title').textContent.toLowerCase();
+                    const sensorType = sensor.getAttribute('data-type').toLowerCase();
+                    
+                    if (sensorName.includes(searchText) || sensorType.includes(searchText)) {
+                        sensor.style.display = '';
+                    } else {
+                        sensor.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Функція для фільтрації датчиків за типом
+            function filterSensorsByType(type) {
+                const sensors = document.querySelectorAll('.sensor-item');
+                
+                sensors.forEach(sensor => {
+                    const sensorType = sensor.getAttribute('data-type').toLowerCase();
+                    const sensorStatus = sensor.getAttribute('data-status').toLowerCase();
+                    
+                    if (type === 'all' || 
+                        (type === 'temperature' && sensorType === 'temperature') ||
+                        (type === 'moisture' && sensorType === 'moisture') ||
+                        (type === 'active' && sensorStatus === 'active') ||
+                        (type === 'inactive' && sensorStatus === 'inactive')) {
+                        sensor.style.display = '';
+                    } else {
+                        sensor.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Функція для показу тостів
+            function showToast(message, type = 'info') {
+                // Створення тосту
+                const toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    const container = document.createElement('div');
+                    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                    document.body.appendChild(container);
+                }
+                
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast align-items-center text-white bg-${type} border-0`;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                
+                toastEl.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Закрити"></button>
+                    </div>
+                `;
+                
+                document.querySelector('.toast-container').appendChild(toastEl);
+                
+                // Ініціалізація і показ
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+                
+                // Видалення після приховування
+                toastEl.addEventListener('hidden.bs.toast', function() {
+                    toastEl.remove();
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

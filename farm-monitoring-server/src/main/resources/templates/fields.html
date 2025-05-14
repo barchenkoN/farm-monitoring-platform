@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Поля')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <!-- Заголовок і панель інструментів -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1><i class="fas fa-seedling me-2"></i> Поля</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Додати поле
+                </button>
+                <div class="btn-group">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Експорт
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-1"></i> Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-1"></i> PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-1"></i> CSV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пошук та фільтрація -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="fieldSearch" class="form-control" placeholder="Пошук полів...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="farmFilter">
+                            <option value="">Усі ферми</option>
+                            <option th:each="farm : ${farms}" th:value="${farm.id}" th:text="${farm.name}">Ферма 1</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="cropFilter">
+                            <option value="">Усі культури</option>
+                            <option value="WHEAT">Пшениця</option>
+                            <option value="CORN">Кукурудза</option>
+                            <option value="SUNFLOWER">Соняшник</option>
+                            <option value="SOYBEAN">Соя</option>
+                            <option value="BARLEY">Ячмінь</option>
+                            <option value="RAPESEED">Ріпак</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Усі статуси</option>
+                            <option value="NORMAL">Нормальний</option>
+                            <option value="WARNING">Попередження</option>
+                            <option value="ALERT">Тривога</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список полів -->
+        <div class="row" th:if="${fields != null && !fields.isEmpty()}">
+            <div th:each="field : ${fields}" class="col-md-4 mb-4 searchable-item" 
+                th:data-farm="${field.farmId}" th:data-crop="${field.cropType}" th:data-status="${field.status}">
+                <div th:class="${'card h-100 sensor-card ' + (field.status == 'NORMAL' ? '' : (field.status == 'WARNING' ? 'border-warning' : 'border-danger'))}">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <span th:class="${'status-indicator ' + 
+                                        (field.status == 'NORMAL' ? 'status-active' : 
+                                        (field.status == 'WARNING' ? 'status-warning' : 'status-error'))}"></span>
+                            <span th:text="${field.name}">Назва поля</span>
+                        </h5>
+                        <span th:class="${'badge ' + (field.status == 'NORMAL' ? 'bg-success' : (field.status == 'WARNING' ? 'bg-warning' : 'bg-danger'))}"
+                              th:text="${field.status}">Статус</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-warehouse me-1"></i> 
+                                <span th:text="${'Ферма: ' + field.farmName}">Ферма: Назва ферми</span>
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-spa me-1"></i> 
+                                <span th:text="${'Культура: ' + field.cropType}">Культура: Пшениця</span>
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-ruler-combined me-1"></i> 
+                                <span th:text="${'Площа: ' + field.sizeHectares + ' га'}">Площа: 120 га</span>
+                            </p>
+                        </div>
+                        
+                        <div class="row text-center mb-3 pb-3 border-top pt-3">
+                            <div class="col">
+                                <h6 class="mb-1">Датчики</h6>
+                                <h4 th:text="${field.sensorsCount}">8</h4>
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">Середня температура</h6>
+                                <h4 th:text="${field.averageTemperature != null ? #numbers.formatDecimal(field.averageTemperature, 1, 1) + ' °C' : 'N/A'}">22.5 °C</h4>
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">Середня вологість</h6>
+                                <h4 th:text="${field.averageMoisture != null ? #numbers.formatDecimal(field.averageMoisture, 1, 1) + ' %' : 'N/A'}">45.2 %</h4>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a th:href="@{/web/field/{id}(id=${field.id})}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> Перегляд деталей
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small>
+                                <i class="fas fa-calendar-alt me-1"></i> 
+                                <span th:text="${'Посів: ' + #temporals.format(field.plantingDate, 'dd.MM.yyyy')}">Посів: 01.05.2025</span>
+                            </small>
+                            <small>
+                                <i class="fas fa-calendar-check me-1"></i> 
+                                <span th:text="${'Збір: ' + #temporals.format(field.harvestDate, 'dd.MM.yyyy')}">Збір: 01.10.2025</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Повідомлення про відсутність даних -->
+        <div class="row" th:if="${fields == null || fields.isEmpty()}">
+            <div class="col">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <h4>Немає доступних полів</h4>
+                    <p>Додайте перше поле, натиснувши кнопку "Додати поле" вгорі сторінки.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пагінація -->
+        <div class="row" th:if="${fields != null && !fields.isEmpty()}">
+            <div class="col">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Попередня</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Наступна</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для повідомлень -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Підвал -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Пошук у полях
+            const fieldSearch = document.getElementById('fieldSearch');
+            const farmFilter = document.getElementById('farmFilter');
+            const cropFilter = document.getElementById('cropFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            function filterFields() {
+                const searchText = fieldSearch.value.toLowerCase();
+                const farmValue = farmFilter.value;
+                const cropValue = cropFilter.value;
+                const statusValue = statusFilter.value;
+                
+                const fields = document.querySelectorAll('.searchable-item');
+                
+                fields.forEach(field => {
+                    const fieldText = field.textContent.toLowerCase();
+                    const fieldFarm = field.getAttribute('data-farm');
+                    const fieldCrop = field.getAttribute('data-crop');
+                    const fieldStatus = field.getAttribute('data-status');
+                    
+                    const matchesSearch = searchText === '' || fieldText.includes(searchText);
+                    const matchesFarm = farmValue === '' || fieldFarm === farmValue;
+                    const matchesCrop = cropValue === '' || fieldCrop === cropValue;
+                    const matchesStatus = statusValue === '' || fieldStatus === statusValue;
+                    
+                    if (matchesSearch && matchesFarm && matchesCrop && matchesStatus) {
+                        field.style.display = '';
+                    } else {
+                        field.style.display = 'none';
+                    }
+                });
+                
+                // Оновлення лічильника видимих елементів
+                const visibleCount = document.querySelectorAll('.searchable-item:not([style*="display: none"])').length;
+                const totalCount = document.querySelectorAll('.searchable-item').length;
+                
+                if (searchText || farmValue || cropValue || statusValue) {
+                    showToast(`Відфільтровано: ${visibleCount} з ${totalCount} полів`, 'info');
+                }
+            }
+            
+            if (fieldSearch) {
+                fieldSearch.addEventListener('input', filterFields);
+            }
+            
+            if (farmFilter) {
+                farmFilter.addEventListener('change', filterFields);
+            }
+            
+            if (cropFilter) {
+                cropFilter.addEventListener('change', filterFields);
+            }
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterFields);
+            }
+        });
+    </script>
+</body>
+</html>

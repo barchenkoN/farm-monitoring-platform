@@ -1,0 +1,21 @@
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY farm-monitoring-server/pom.xml ./farm-monitoring-server/
+COPY farm-monitoring-sensor-emulator/pom.xml ./farm-monitoring-sensor-emulator/
+
+RUN mvn dependency:go-offline -B
+
+COPY . .
+
+RUN mvn package -DskipTests
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=build /app/farm-monitoring-sensor-emulator/target/farm-monitoring-sensor-emulator-*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"] 

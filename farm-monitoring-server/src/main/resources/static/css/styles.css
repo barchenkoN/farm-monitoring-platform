@@ -1,0 +1,429 @@
+/* Main styles for Farm Monitoring Platform */
+
+:root {
+    --primary-color: #28a745;
+    --secondary-color: #6c757d;
+    --temperature-color: #ff6b6b;
+    --moisture-color: #4dabf7;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-radius: 0.375rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --transition-speed: 0.3s;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    background-color: #f5f7fa;
+    line-height: 1.6;
+}
+
+/* Improved card styles */
+.card {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    border: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background-color: rgba(0,0,0,0.02);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    font-weight: 500;
+}
+
+/* Sensor cards */
+.sensor-card {
+    transition: all var(--transition-speed) ease;
+    border-left: 5px solid transparent;
+    overflow: hidden;
+    position: relative;
+}
+
+.sensor-card.temperature {
+    border-left-color: var(--temperature-color);
+}
+
+.sensor-card.moisture {
+    border-left-color: var(--moisture-color);
+}
+
+.sensor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.sensor-card .sensor-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    opacity: 0.2;
+    font-size: 3rem;
+}
+
+.sensor-card .card-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0 0 0 0.5rem;
+}
+
+/* Enhanced buttons */
+.btn {
+    border-radius: 0.25rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+}
+
+/* Improved Progress bars */
+.battery-indicator .battery-level {
+    height: 20px;
+    transition: width 0.5s ease;
+    position: relative;
+    border-radius: 0.25rem;
+}
+
+.battery-indicator .battery-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Dashboard widgets */
+.dashboard-widget {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-widget .card-header {
+    font-weight: bold;
+}
+
+/* Analytics charts */
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+    width: 100%;
+    background-color: white;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    position: relative;
+}
+
+.status-active {
+    background-color: var(--success-color);
+    box-shadow: 0 0 5px var(--success-color);
+}
+
+.status-active:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--success-color);
+    animation: pulse 2s infinite;
+    opacity: 0.8;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    70% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+.status-inactive {
+    background-color: var(--secondary-color);
+}
+
+.status-warning {
+    background-color: var(--warning-color);
+    box-shadow: 0 0 5px var(--warning-color);
+}
+
+.status-error {
+    background-color: var(--danger-color);
+    box-shadow: 0 0 5px var(--danger-color);
+}
+
+/* Field map */
+.field-map {
+    height: 400px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+/* Responsive tables */
+.table-responsive {
+    overflow-x: auto;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: rgba(0,0,0,0.03);
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Helper classes */
+.text-temperature {
+    color: var(--temperature-color);
+}
+
+.text-moisture {
+    color: var(--moisture-color);
+}
+
+.bg-temperature-light {
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+.bg-moisture-light {
+    background-color: rgba(77, 171, 247, 0.1);
+}
+
+/* Animation for real-time updates */
+@keyframes highlight {
+    0% { background-color: rgba(255, 255, 0, 0.3); }
+    100% { background-color: transparent; }
+}
+
+.highlight {
+    animation: highlight 2s ease;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* Field and farm specific styles */
+.field-info-table th {
+    color: var(--secondary-color);
+    width: 40%;
+    vertical-align: middle;
+}
+
+.field-info-table td {
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+.field-status-indicator, .farm-status-indicator {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.field-status-indicator:hover, .farm-status-indicator:hover {
+    transform: scale(1.05);
+}
+
+.field-status-indicator.active, .farm-status-indicator.active {
+    color: var(--success-color);
+}
+
+.field-status-indicator.warning, .farm-status-indicator.warning {
+    color: var(--warning-color);
+}
+
+.field-status-indicator.inactive, .farm-status-indicator.inactive {
+    color: var(--danger-color);
+}
+
+/* Sensor indicators on field page */
+.sensor-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.sensor-icon:hover {
+    transform: scale(1.2);
+}
+
+.sensor-icon.temperature {
+    background-color: rgba(255, 107, 107, 0.2);
+    color: var(--temperature-color);
+}
+
+.sensor-icon.moisture {
+    background-color: rgba(77, 171, 247, 0.2);
+    color: var(--moisture-color);
+}
+
+/* Field notes and tasks styles */
+.field-note, .field-task {
+    padding: 12px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+    border-left: 3px solid #dee2e6;
+}
+
+.field-note:hover, .field-task:hover {
+    background-color: #f1f3f5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Map type buttons */
+.map-type-btn.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+/* Period filter buttons */
+.period-btn.active {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+/* Toast notifications */
+.toast {
+    border-radius: var(--border-radius);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.toast-container {
+    z-index: 1060;
+}
+
+/* Page transitions */
+.page-transition {
+    transition: opacity 0.3s ease;
+}
+
+.page-transition.fade-out {
+    opacity: 0;
+}
+
+/* Loading indicator */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 0.3s, opacity 0.3s linear;
+}
+
+.loading-overlay.show {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity 0.3s linear;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Improve focus visibility for accessibility */
+a:focus, button:focus, input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Add smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}

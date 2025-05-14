@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Ферми')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <!-- Заголовок і панель інструментів -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1><i class="fas fa-warehouse me-2"></i> Ферми</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-primary me-2">
+                    <i class="fas fa-plus me-1"></i> Додати ферму
+                </button>
+                <div class="btn-group">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Експорт
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-1"></i> Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-1"></i> PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-1"></i> CSV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пошук та фільтрація -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="farmSearch" class="form-control" placeholder="Пошук ферм...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="regionFilter">
+                            <option value="">Усі регіони</option>
+                            <option value="NORTH">Північ</option>
+                            <option value="SOUTH">Південь</option>
+                            <option value="EAST">Схід</option>
+                            <option value="WEST">Захід</option>
+                            <option value="CENTER">Центр</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">Усі статуси</option>
+                            <option value="ACTIVE">Активна</option>
+                            <option value="INACTIVE">Неактивна</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список ферм -->
+        <div class="row" th:if="${farms != null && !farms.isEmpty()}">
+            <div th:each="farm : ${farms}" class="col-md-4 mb-4 searchable-item" 
+                th:data-region="${farm.region}" th:data-status="${farm.status}">
+                <div class="card h-100 sensor-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <span th:class="${'status-indicator ' + 
+                                        (farm.status == 'ACTIVE' ? 'status-active' : 'status-inactive')}"></span>
+                            <span th:text="${farm.name}">Назва ферми</span>
+                        </h5>
+                        <span th:class="${'badge ' + (farm.status == 'ACTIVE' ? 'bg-success' : 'bg-secondary')}"
+                              th:text="${farm.status}">Статус</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-map-marker-alt me-1"></i> 
+                                <span th:text="${farm.location}">Адреса ферми</span>
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-compass me-1"></i> 
+                                <span th:text="${'Регіон: ' + farm.region}">Регіон: Північ</span>
+                            </p>
+                            <p class="text-muted mb-1">
+                                <i class="fas fa-ruler-combined me-1"></i> 
+                                <span th:text="${'Площа: ' + farm.totalArea + ' га'}">Площа: 1200 га</span>
+                            </p>
+                        </div>
+                        
+                        <div class="mb-3 pb-3 border-top pt-3">
+                            <div class="row text-center">
+                                <div class="col">
+                                    <h6 class="mb-1">Поля</h6>
+                                    <h4 th:text="${farm.fieldsCount}">12</h4>
+                                </div>
+                                <div class="col">
+                                    <h6 class="mb-1">Датчики</h6>
+                                    <h4 th:text="${farm.sensorsCount}">48</h4>
+                                </div>
+                                <div class="col">
+                                    <h6 class="mb-1">Культури</h6>
+                                    <h4 th:text="${farm.cropsCount}">5</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <a th:href="@{/web/farm/{id}(id=${farm.id})}" class="btn btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> Перегляд деталей
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>
+                            <i class="fas fa-calendar-alt me-1"></i> 
+                            <span th:text="${'Створено: ' + #temporals.format(farm.createdAt, 'dd.MM.yyyy')}">Створено: 01.05.2025</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Повідомлення про відсутність даних -->
+        <div class="row" th:if="${farms == null || farms.isEmpty()}">
+            <div class="col">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle fa-3x mb-3"></i>
+                    <h4>Немає доступних ферм</h4>
+                    <p>Додайте першу ферму, натиснувши кнопку "Додати ферму" вгорі сторінки.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Пагінація -->
+        <div class="row" th:if="${farms != null && !farms.isEmpty()}">
+            <div class="col">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Попередня</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Наступна</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для повідомлень -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Підвал -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Пошук у фермах
+            const farmSearch = document.getElementById('farmSearch');
+            const regionFilter = document.getElementById('regionFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            function filterFarms() {
+                const searchText = farmSearch.value.toLowerCase();
+                const regionValue = regionFilter.value;
+                const statusValue = statusFilter.value;
+                
+                const farms = document.querySelectorAll('.searchable-item');
+                
+                farms.forEach(farm => {
+                    const farmText = farm.textContent.toLowerCase();
+                    const farmRegion = farm.getAttribute('data-region');
+                    const farmStatus = farm.getAttribute('data-status');
+                    
+                    const matchesSearch = searchText === '' || farmText.includes(searchText);
+                    const matchesRegion = regionValue === '' || farmRegion === regionValue;
+                    const matchesStatus = statusValue === '' || farmStatus === statusValue;
+                    
+                    if (matchesSearch && matchesRegion && matchesStatus) {
+                        farm.style.display = '';
+                    } else {
+                        farm.style.display = 'none';
+                    }
+                });
+                
+                // Оновлення лічильника видимих елементів
+                const visibleCount = document.querySelectorAll('.searchable-item:not([style*="display: none"])').length;
+                const totalCount = document.querySelectorAll('.searchable-item').length;
+                
+                if (searchText || regionValue || statusValue) {
+                    showToast(`Відфільтровано: ${visibleCount} з ${totalCount} ферм`, 'info');
+                }
+            }
+            
+            if (farmSearch) {
+                farmSearch.addEventListener('input', filterFarms);
+            }
+            
+            if (regionFilter) {
+                regionFilter.addEventListener('change', filterFarms);
+            }
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', filterFarms);
+            }
+        });
+    </script>
+</body>
+</html>

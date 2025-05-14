@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Аналітика')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <!-- Заголовок і панель інструментів -->
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                <h1><i class="fas fa-chart-line me-2"></i> Аналітика та звіти</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Експорт
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-1"></i> Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-1"></i> PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-1"></i> CSV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Фільтри для аналітики -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="dateRangeFilter" class="form-label">Період аналізу</label>
+                        <select class="form-select" id="dateRangeFilter">
+                            <option value="day">Сьогодні</option>
+                            <option value="week">Останній тиждень</option>
+                            <option value="month" selected>Останній місяць</option>
+                            <option value="quarter">Останній квартал</option>
+                            <option value="year">Останній рік</option>
+                            <option value="custom">Власний період</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="farmFilter" class="form-label">Ферма</label>
+                        <select class="form-select" id="farmFilter">
+                            <option value="" selected>Всі ферми</option>
+                            <option th:each="farm : ${farms}" th:value="${farm.id}" th:text="${farm.name}">Ферма 1</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="fieldFilter" class="form-label">Поле</label>
+                        <select class="form-select" id="fieldFilter" disabled>
+                            <option value="" selected>Всі поля</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataTypeFilter" class="form-label">Тип даних</label>
+                        <select class="form-select" id="dataTypeFilter">
+                            <option value="all" selected>Всі дані</option>
+                            <option value="TEMPERATURE">Температура</option>
+                            <option value="MOISTURE">Вологість</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Додаткові фільтри (з'являються при виборі власного періоду) -->
+                <div id="customDateRange" class="row g-3 mt-1 d-none">
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">Дата початку</label>
+                        <input type="date" class="form-control" id="startDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">Дата кінця</label>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="applyDateRange">
+                            <i class="fas fa-filter me-1"></i> Застосувати
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Головні метрики -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Середня температура</h5>
+                        <p class="display-4 text-temperature" th:text="${avgTemperature != null ? #numbers.formatDecimal(avgTemperature, 1, 1) + ' °C' : 'N/A'}">22.5 °C</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${temperatureTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(temperatureTrend, 1, 1) + '%'}">+2.5%</span>
+                            </span>
+                            <span th:if="${temperatureTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(temperatureTrend), 1, 1) + '%'}">-2.5%</span>
+                            </span>
+                            <span th:if="${temperatureTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Середня вологість</h5>
+                        <p class="display-4 text-moisture" th:text="${avgMoisture != null ? #numbers.formatDecimal(avgMoisture, 1, 1) + ' %' : 'N/A'}">45.2 %</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${moistureTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(moistureTrend, 1, 1) + '%'}">+3.1%</span>
+                            </span>
+                            <span th:if="${moistureTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(moistureTrend), 1, 1) + '%'}">-3.1%</span>
+                            </span>
+                            <span th:if="${moistureTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Кількість зчитувань</h5>
+                        <p class="display-4" th:text="${readingsCount}">1254</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${readingsTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(readingsTrend, 1, 1) + '%'}">+5.7%</span>
+                            </span>
+                            <span th:if="${readingsTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(readingsTrend), 1, 1) + '%'}">-5.7%</span>
+                            </span>
+                            <span th:if="${readingsTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Рівень заряду (середній)</h5>
+                        <p class="display-4" th:text="${avgBatteryLevel != null ? #numbers.formatDecimal(avgBatteryLevel, 1, 1) + ' %' : 'N/A'}">72.8 %</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${batteryTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(batteryTrend, 1, 1) + '%'}">+1.2%</span>
+                            </span>
+                            <span th:if="${batteryTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(batteryTrend), 1, 1) + '%'}">-1.2%</span>
+                            </span>
+                            <span th:if="${batteryTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Графіки аналітики -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-1"></i> Динаміка показників</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary chart-type-btn active" data-type="line">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary chart-type-btn" data-type="bar">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary chart-type-btn" data-type="area">
+                                <i class="fas fa-chart-area"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <div id="mainChartLoading" class="d-none spinner-container">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Завантаження...</span>
+                                </div>
+                            </div>
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Детальна аналітика -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-thermometer-half me-1 text-temperature"></i> Розподіл температури</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="temperatureDistributionChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tint me-1 text-moisture"></i> Розподіл вологості</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="moistureDistributionChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Таблиця даних -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-table me-1"></i> Детальні дані</h5>
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <input type="text" class="form-control" id="tableSearch" placeholder="Пошук...">
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Дата і час</th>
+                                        <th scope="col">Ферма</th>
+                                        <th scope="col">Поле</th>
+                                        <th scope="col">Датчик</th>
+                                        <th scope="col">Тип даних</th>
+                                        <th scope="col">Значення</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="reading : ${readings}">
+                                        <td th:text="${#temporals.format(reading.timestamp, 'dd.MM.yyyy HH:mm:ss')}">01.05.2025 12:34:56</td>
+                                        <td th:text="${reading.farmName}">Ферма 1</td>
+                                        <td th:text="${reading.fieldName}">Поле 1</td>
+                                        <td th:text="${reading.sensorName}">Датчик 1</td>
+                                        <td>
+                                            <span th:if="${reading.readingType == 'TEMPERATURE'}" class="badge bg-danger">
+                                                <i class="fas fa-thermometer-half me-1"></i> Температура
+                                            </span>
+                                            <span th:if="${reading.readingType == 'MOISTURE'}" class="badge bg-info">
+                                                <i class="fas fa-tint me-1"></i> Вологість
+                                            </span>
+                                        </td>
+                                        <td th:text="${reading.value + ' ' + reading.unit}">22.5 °C</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Попередня</a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                <li class="page-item">
+                                    <a class="page-link" href="#">Наступна</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контейнер для повідомлень -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <!-- Підвал -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+
+    <!-- Скрипти -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ініціалізація графіків
+            initMainChart();
+            initDistributionCharts();
+            
+            // Фільтр "Власний період"
+            const dateRangeFilter = document.getElementById('dateRangeFilter');
+            const customDateRange = document.getElementById('customDateRange');
+            
+            if (dateRangeFilter) {
+                dateRangeFilter.addEventListener('change', function() {
+                    if (this.value === 'custom') {
+                        customDateRange.classList.remove('d-none');
+                    } else {
+                        customDateRange.classList.add('d-none');
+                        // При зміні періоду - оновлення даних
+                        updateAnalytics();
+                    }
+                });
+            }
+            
+            // Кнопка застосування власного періоду
+            const applyDateRange = document.getElementById('applyDateRange');
+            if (applyDateRange) {
+                applyDateRange.addEventListener('click', function() {
+                    // Оновлення даних для власного періоду
+                    updateAnalytics();
+                });
+            }
+            
+            // Фільтр ферми (при виборі ферми - оновлення списку полів)
+            const farmFilter = document.getElementById('farmFilter');
+            const fieldFilter = document.getElementById('fieldFilter');
+            
+            if (farmFilter && fieldFilter) {
+                farmFilter.addEventListener('change', function() {
+                    if (this.value === '') {
+                        // Якщо вибрані всі ферми - поля недоступні
+                        fieldFilter.disabled = true;
+                        fieldFilter.innerHTML = '<option value="" selected>Всі поля</option>';
+                    } else {
+                        // Якщо вибрана конкретна ферма - завантаження полів
+                        fieldFilter.disabled = false;
+                        
+                        // Тут буде AJAX-запит для отримання полів для конкретної ферми
+                        // Зараз просто імітуємо для прикладу
+                        setTimeout(() => {
+                            fieldFilter.innerHTML = `
+                                <option value="" selected>Всі поля</option>
+                                <option value="1">Поле 1</option>
+                                <option value="2">Поле 2</option>
+                                <option value="3">Поле 3</option>
+                            `;
+                        }, 500);
+                    }
+                    
+                    // Оновлення даних при зміні ферми
+                    updateAnalytics();
+                });
+            }
+            
+            // Фільтр поля і типу даних
+            const dataTypeFilter = document.getElementById('dataTypeFilter');
+            
+            if (fieldFilter) {
+                fieldFilter.addEventListener('change', updateAnalytics);
+            }
+            
+            if (dataTypeFilter) {
+                dataTypeFilter.addEventListener('change', updateAnalytics);
+            }
+            
+            // Перемикачі типу графіка
+            const chartTypeButtons = document.querySelectorAll('.chart-type-btn');
+            
+            chartTypeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Зняття активного класу з усіх кнопок
+                    chartTypeButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Додавання активного класу до натиснутої кнопки
+                    this.classList.add('active');
+                    
+                    // Зміна типу графіка
+                    const chartType = this.getAttribute('data-type');
+                    updateChartType(chartType);
+                });
+            });
+            
+            // Пошук у таблиці
+            const tableSearch = document.getElementById('tableSearch');
+            
+            if (tableSearch) {
+                tableSearch.addEventListener('input', function() {
+                    const searchText = this.value.toLowerCase();
+                    const tableRows = document.querySelectorAll('tbody tr');
+                    
+                    tableRows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        if (text.includes(searchText)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+        
+        // Ініціалізація головного графіка
+        function initMainChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            
+            // Підготовка тестових даних (в реальному додатку дані будуть з сервера)
+            const dates = [];
+            const temperatureData = [];
+            const moistureData = [];
+            
+            // Генерація тестових даних за останні 30 днів
+            const now = new Date();
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                dates.push(date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' }));
+                
+                // Випадкові дані для температури (з тенденцією до підвищення)
+                temperatureData.push(Math.floor(18 + Math.random() * 5 + i * 0.1));
+                
+                // Випадкові дані для вологості (з тенденцією до зниження)
+                moistureData.push(Math.floor(60 - Math.random() * 5 - i * 0.2));
+            }
+            
+            // Створення графіка
+            window.mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Температура (°C)',
+                            data: temperatureData,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Вологість (%)',
+                            data: moistureData,
+                            borderColor: '#4dabf7',
+                            backgroundColor: 'rgba(77, 171, 247, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Дата'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Значення'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Ініціалізація графіків розподілу
+        function initDistributionCharts() {
+            // Графік розподілу температури
+            const tempCtx = document.getElementById('temperatureDistributionChart').getContext('2d');
+            
+            new Chart(tempCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['< 15°C', '15-18°C', '18-20°C', '20-22°C', '22-25°C', '25-28°C', '> 28°C'],
+                    datasets: [{
+                        label: 'Кількість зчитувань',
+                        data: [12, 45, 124, 345, 298, 178, 42],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 129, 102, 0.7)',
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(201, 77, 77, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Кількість зчитувань'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Діапазон температур'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Графік розподілу вологості
+            const moistCtx = document.getElementById('moistureDistributionChart').getContext('2d');
+            
+            new Chart(moistCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['< 30%', '30-35%', '35-40%', '40-45%', '45-50%', '50-55%', '> 55%'],
+                    datasets: [{
+                        label: 'Кількість зчитувань',
+                        data: [35, 78, 156, 287, 302, 194, 52],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(201, 203, 207, 0.7)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Кількість зчитувань'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Діапазон вологості'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Оновлення аналітичних даних (імітація AJAX-запиту)
+        function updateAnalytics() {
+            // Показ індикатора завантаження
+            const loadingSpinner = document.getElementById('mainChartLoading');
+            if (loadingSpinner) {
+                loadingSpinner.classList.remove('d-none');
+            }
+            
+            // Отримання значень фільтрів
+            const dateRange = document.getElementById('dateRangeFilter').value;
+            const farmId = document.getElementById('farmFilter').value;
+            const fieldId = document.getElementById('fieldFilter').value;
+            const dataType = document.getElementById('dataTypeFilter').value;
+            
+            // Підготовка параметрів для запиту
+            let params = {
+                dateRange: dateRange,
+                farmId: farmId,
+                fieldId: fieldId,
+                dataType: dataType
+            };
+            
+            // Якщо вибрано "Власний період", додаємо дати
+            if (dateRange === 'custom') {
+                params.startDate = document.getElementById('startDate').value;
+                params.endDate = document.getElementById('endDate').value;
+            }
+            
+            // Імітація AJAX-запиту з таймаутом
+            setTimeout(() => {
+                // Оновлення графіків випадковими даними (в реальному додатку дані будуть з сервера)
+                updateChartData();
+                
+                // Приховання індикатора завантаження
+                if (loadingSpinner) {
+                    loadingSpinner.classList.add('d-none');
+                }
+                
+                // Показ повідомлення
+                showToast('Дані аналітики оновлено', 'success');
+            }, 1000);
+        }
+        
+        // Оновлення даних на графіку (імітація нових даних)
+        function updateChartData() {
+            // Генерація нових випадкових даних для температури і вологості
+            const temperatureData = [];
+            const moistureData = [];
+            
+            for (let i = 0; i < 30; i++) {
+                temperatureData.push(Math.floor(18 + Math.random() * 10));
+                moistureData.push(Math.floor(35 + Math.random() * 30));
+            }
+            
+            // Оновлення даних на графіку
+            window.mainChart.data.datasets[0].data = temperatureData;
+            window.mainChart.data.datasets[1].data = moistureData;
+            window.mainChart.update();
+        }
+        
+        // Зміна типу графіка
+        function updateChartType(type) {
+            // Конвертація типу графіка "area" у "line" з fill: true
+            if (type === 'area') {
+                window.mainChart.config.type = 'line';
+                window.mainChart.data.datasets.forEach(dataset => {
+                    dataset.fill = true;
+                });
+            } else {
+                window.mainChart.config.type = type;
+                window.mainChart.data.datasets.forEach(dataset => {
+                    dataset.fill = false;
+                });
+            }
+            
+            window.mainChart.update();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Інформація про ферму')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/web}">Головна</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/web/farms}">Ферми</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" th:text="${farm.name}">Ферма Сонячна</li>
+                    </ol>
+                </nav>
+                <h1 th:text="${farm.name}">Ферма Сонячна</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group mb-2">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <a th:href="@{/web/farm/{id}/edit(id=${farm.id})}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i> Редагувати
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i> Дії
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-export me-1"></i> Експорт даних</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-1"></i> Друк звіту</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-1"></i> Видалити ферму</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Інформаційні картки -->
+        <div class="row mb-4">
+            <!-- Основна інформація про ферму -->
+            <div class="col-md-8">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i> Загальна інформація</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="row g-0">
+                            <div class="col-md-4 p-4 text-center border-end">
+                                <div class="farm-status-indicator mb-3" th:class="'farm-status-indicator ' + ${farm.status.toLowerCase()}">
+                                    <i class="fas fa-warehouse fa-3x"></i>
+                                </div>
+                                <h4 th:text="${farm.name}">Ферма Сонячна</h4>
+                                <span th:if="${farm.status == 'ACTIVE'}" class="badge bg-success">Активна</span>
+                                <span th:if="${farm.status == 'INACTIVE'}" class="badge bg-danger">Неактивна</span>
+                                <span th:if="${farm.status == 'MAINTENANCE'}" class="badge bg-warning">Обслуговування</span>
+                            </div>
+                            <div class="col-md-8 p-4">
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Інформація</h6>
+                                        <p class="mb-2"><i class="fas fa-user me-2 text-primary"></i> <strong>Власник:</strong> <span th:text="${farm.ownerName}">Іван Петренко</span></p>
+                                        <p class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> <strong>Телефон:</strong> <span th:text="${farm.contactPhone}">+380501234567</span></p>
+                                        <p class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> <strong>Email:</strong> <span th:text="${farm.contactEmail}">info@farm.ua</span></p>
+                                        <p class="mb-2"><i class="fas fa-calendar-alt me-2 text-primary"></i> <strong>Створено:</strong> <span th:text="${farm.createdAt}">01.01.2025</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Розташування</h6>
+                                        <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-danger"></i> <strong>Адреса:</strong> <span th:text="${farm.address}">вул. Фермерська, 123</span></p>
+                                        <p class="mb-2"><i class="fas fa-city me-2 text-danger"></i> <strong>Населений пункт:</strong> <span th:text="${farm.city}">Київ</span></p>
+                                        <p class="mb-2"><i class="fas fa-globe me-2 text-danger"></i> <strong>Регіон:</strong> <span th:text="${farm.region}">Київська область</span></p>
+                                        <p class="mb-2"><i class="fas fa-flag me-2 text-danger"></i> <strong>Країна:</strong> <span th:text="${farm.country}">Україна</span></p>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <h6 class="text-muted mb-2">Додаткова інформація</h6>
+                                    <div class="d-flex gap-3">
+                                        <div class="text-center">
+                                            <div class="fs-2 fw-bold" th:text="${fields.size()}">5</div>
+                                            <div class="text-muted">Полів</div>
+                                        </div>
+                                        <div class="vr mx-2"></div>
+                                        <div class="text-center">
+                                            <div class="fs-2 fw-bold" th:text="${sensors.size()}">12</div>
+                                            <div class="text-muted">Датчиків</div>
+                                        </div>
+                                        <div class="vr mx-2"></div>
+                                        <div class="text-center">
+                                            <div class="fs-2 fw-bold" th:text="${#numbers.formatDecimal(activeSensorsPercentage, 1, 1)} + '%'">83.3%</div>
+                                            <div class="text-muted">Активних датчиків</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статистика ферми -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i> Статистика</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span><i class="fas fa-thermometer-half text-temperature me-1"></i> Середня температура</span>
+                                <span class="badge" th:classappend="${temperatureTrend > 0 ? 'bg-danger' : 'bg-success'}">
+                                    <i class="fas" th:classappend="${temperatureTrend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                                    <span th:text="${#numbers.formatDecimal(Math.abs(temperatureTrend), 1, 1)} + '°C'">2.5°C</span>
+                                </span>
+                            </div>
+                            <h3 class="mb-0 text-temperature" th:text="${#numbers.formatDecimal(avgTemperature, 1, 1)} + ' °C'">22.5 °C</h3>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span><i class="fas fa-tint text-moisture me-1"></i> Середня вологість</span>
+                                <span class="badge" th:classappend="${moistureTrend > 0 ? 'bg-success' : 'bg-danger'}">
+                                    <i class="fas" th:classappend="${moistureTrend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                                    <span th:text="${#numbers.formatDecimal(Math.abs(moistureTrend), 1, 1)} + '%'">1.8%</span>
+                                </span>
+                            </div>
+                            <h3 class="mb-0 text-moisture" th:text="${#numbers.formatDecimal(avgMoisture, 1, 1)} + ' %'">48.2 %</h3>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span><i class="fas fa-battery-half text-warning me-1"></i> Середній заряд</span>
+                                <span class="badge" th:classappend="${batteryTrend > 0 ? 'bg-success' : 'bg-danger'}">
+                                    <i class="fas" th:classappend="${batteryTrend > 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                                    <span th:text="${#numbers.formatDecimal(Math.abs(batteryTrend), 1, 1)} + '%'">0.7%</span>
+                                </span>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <h3 class="mb-0" th:text="${#numbers.formatDecimal(avgBatteryLevel, 1, 1)} + ' %'">76.5 %</h3>
+                                <div class="progress flex-grow-1" style="height: 10px;" data-bs-toggle="tooltip" th:title="${#numbers.formatDecimal(avgBatteryLevel, 1, 1)} + '%'">
+                                    <div class="progress-bar" role="progressbar" th:style="'width: ' + ${avgBatteryLevel} + '%'" 
+                                         th:classappend="${avgBatteryLevel < 20 ? 'bg-danger' : (avgBatteryLevel < 50 ? 'bg-warning' : 'bg-success')}"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="text-muted mb-1">Остання активність</p>
+                            <p class="mb-0" th:if="${lastUpdated}" th:text="${#temporals.format(lastUpdated, 'dd.MM.yyyy HH:mm')}">14.05.2025 15:30</p>
+                            <p class="mb-0" th:unless="${lastUpdated}">Немає даних</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ключові показники -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Середня температура</h5>
+                        <p class="display-4 text-temperature" th:text="${avgTemperature != null ? #numbers.formatDecimal(avgTemperature, 1, 1) + ' °C' : 'N/A'}">22.5 °C</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${temperatureTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(temperatureTrend, 1, 1) + '%'}">+2.5%</span>
+                            </span>
+                            <span th:if="${temperatureTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(temperatureTrend), 1, 1) + '%'}">-2.5%</span>
+                            </span>
+                            <span th:if="${temperatureTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Середня вологість</h5>
+                        <p class="display-4 text-moisture" th:text="${avgMoisture != null ? #numbers.formatDecimal(avgMoisture, 1, 1) + ' %' : 'N/A'}">45.2 %</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${moistureTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(moistureTrend, 1, 1) + '%'}">+3.1%</span>
+                            </span>
+                            <span th:if="${moistureTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(moistureTrend), 1, 1) + '%'}">-3.1%</span>
+                            </span>
+                            <span th:if="${moistureTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Активні датчики</h5>
+                        <p class="display-4" th:text="${activeSensorsPercentage != null ? #numbers.formatDecimal(activeSensorsPercentage, 1, 1) + ' %' : 'N/A'}">85.7 %</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${activeSensorsCount != null}" th:text="${activeSensorsCount + ' з ' + sensors.size() + ' датчиків'}">18 з 21 датчиків</span>
+                            <span th:unless="${activeSensorsCount != null}">N/A</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-muted">Рівень заряду (середній)</h5>
+                        <p class="display-4" th:text="${avgBatteryLevel != null ? #numbers.formatDecimal(avgBatteryLevel, 1, 1) + ' %' : 'N/A'}">72.8 %</p>
+                        <p class="mb-0 text-muted">
+                            <span th:if="${batteryTrend > 0}" class="text-success">
+                                <i class="fas fa-arrow-up me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(batteryTrend, 1, 1) + '%'}">+1.2%</span>
+                            </span>
+                            <span th:if="${batteryTrend < 0}" class="text-danger">
+                                <i class="fas fa-arrow-down me-1"></i>
+                                <span th:text="${#numbers.formatDecimal(Math.abs(batteryTrend), 1, 1) + '%'}">-1.2%</span>
+                            </span>
+                            <span th:if="${batteryTrend == 0}">
+                                <i class="fas fa-minus me-1"></i> Без змін
+                            </span>
+                            порівняно з попереднім періодом
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Графік ключових показників -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Дані по фермі</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary period-btn active" data-period="day">День</button>
+                            <button type="button" class="btn btn-outline-secondary period-btn" data-period="week">Тиждень</button>
+                            <button type="button" class="btn btn-outline-secondary period-btn" data-period="month">Місяць</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 300px;">
+                            <canvas id="farmDataChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Таблиця полів ферми -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-th me-2"></i> Поля</h5>
+                        <div class="d-flex">
+                            <div class="input-group input-group-sm me-2" style="width: 250px;">
+                                <input type="text" class="form-control" id="fieldSearch" placeholder="Пошук полів...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <a th:href="@{/web/farm/{id}/fields/add(id=${farm.id})}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-plus me-1"></i> Додати поле
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Назва</th>
+                                        <th scope="col">Площа (га)</th>
+                                        <th scope="col">Поточна культура</th>
+                                        <th scope="col">Тип ґрунту</th>
+                                        <th scope="col">Датчики</th>
+                                        <th scope="col">Статус</th>
+                                        <th scope="col">Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="field : ${fields}">
+                                        <td>
+                                            <a th:href="@{/web/field/{id}(id=${field.id})}" class="fw-bold" th:text="${field.name}">Пшеничне поле 1</a>
+                                        </td>
+                                        <td th:text="${field.area}">120.5</td>
+                                        <td th:text="${field.currentCrop}">Пшениця</td>
+                                        <td th:text="${field.soilType}">Чорнозем</td>
+                                        <td th:text="${field.sensorsCount ?: 0}">8</td>
+                                        <td>
+                                            <span th:if="${field.status == 'ACTIVE'}" class="badge bg-success">Активне</span>
+                                            <span th:if="${field.status == 'WARNING'}" class="badge bg-warning">Попередження</span>
+                                            <span th:if="${field.status == 'INACTIVE'}" class="badge bg-danger">Неактивне</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/web/field/{id}(id=${field.id})}" class="btn btn-outline-primary" title="Перегляд">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/web/field/{id}/edit(id=${field.id})}" class="btn btn-outline-primary" title="Редагування">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${fields.empty}" class="text-center p-4">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <p>На цій фермі ще немає полів. Додайте поля для збору даних.</p>
+                                <a th:href="@{/web/farm/{id}/fields/add(id=${farm.id})}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Додати поле
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список полів ферми -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-seedling me-2"></i> Поля ферми</h5>
+                            <div class="d-flex gap-2">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="fieldSearchInput" placeholder="Пошук полів" onkeyup="filterTable(this.value, 'fieldsTable')">
+                                </div>
+                                <a th:href="@{/web/field/create(farmId=${farm.id})}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Додати поле
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped" id="fieldsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">ID</th>
+                                        <th style="width: 20%;">Назва</th>
+                                        <th style="width: 15%;">Культура</th>
+                                        <th style="width: 10%;">Площа (га)</th>
+                                        <th style="width: 15%;">Кількість датчиків</th>
+                                        <th style="width: 15%;">Середня температура</th>
+                                        <th style="width: 10%;">Статус</th>
+                                        <th style="width: 10%;">Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="field : ${fields}">
+                                        <td th:text="${field.id}">1</td>
+                                        <td>
+                                            <a th:href="@{/web/field/{id}(id=${field.id})}" th:text="${field.name}" class="text-decoration-none fw-medium">Поле 1</a>
+                                        </td>
+                                        <td th:text="${field.cropType}">Пшениця</td>
+                                        <td th:text="${field.area}">5.8</td>
+                                        <td>
+                                            <span class="badge rounded-pill bg-light text-dark border">
+                                                <i class="fas fa-microchip me-1"></i>
+                                                <span th:text="${#lists.size(field.sensors)} + ' шт.'">3 шт.</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-thermometer-half text-temperature me-2"></i>
+                                                <span th:text="${#numbers.formatDecimal(field.avgTemperature, 1, 1)} + ' °C'">22.5 °C</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${field.status == 'ACTIVE'}" class="badge bg-success">Активне</span>
+                                            <span th:if="${field.status == 'INACTIVE'}" class="badge bg-danger">Неактивне</span>
+                                            <span th:if="${field.status == 'MAINTENANCE'}" class="badge bg-warning">Обслуговування</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/web/field/{id}(id=${field.id})}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Деталі">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/web/field/{id}/edit(id=${field.id})}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Редагувати">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Видалити">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(fields)}">
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-seedling fa-2x text-muted mb-3"></i>
+                                            <p class="mb-0">На цій фермі ще немає полів.</p>
+                                            <p class="mb-0">
+                                                <a th:href="@{/web/field/create(farmId=${farm.id})}" class="btn btn-sm btn-primary mt-2">
+                                                    <i class="fas fa-plus me-1"></i> Додати поле
+                                                </a>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Таблиця датчиків ферми -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i> Датчики</h5>
+                        <div class="d-flex">
+                            <div class="input-group input-group-sm me-2" style="width: 250px;">
+                                <input type="text" class="form-control" id="sensorSearch" placeholder="Пошук датчиків...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <a th:href="@{/web/farm/{id}/sensors/add(id=${farm.id})}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-plus me-1"></i> Додати датчик
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">Назва</th>
+                                        <th scope="col">Тип</th>
+                                        <th scope="col">Розташування</th>
+                                        <th scope="col">Останнє зчитування</th>
+                                        <th scope="col">Батарея</th>
+                                        <th scope="col">Статус</th>
+                                        <th scope="col">Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sensor : ${sensors}">
+                                        <td>
+                                            <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="fw-bold" th:text="${sensor.name}">Датчик 1</a>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sensor.type == 'TEMPERATURE'}" class="badge bg-danger">
+                                                <i class="fas fa-thermometer-half me-1"></i> Температура
+                                            </span>
+                                            <span th:if="${sensor.type == 'MOISTURE'}" class="badge bg-info">
+                                                <i class="fas fa-tint me-1"></i> Вологість
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${fieldNames != null && fieldNames.containsKey(sensor.fieldId) ? fieldNames.get(sensor.fieldId) : 'Невідомо'}">Пшеничне поле 1</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${lastReadings != null && lastReadings.containsKey(sensor.id)}">
+                                                <span th:if="${sensor.type == 'TEMPERATURE'}" th:text="${#numbers.formatDecimal(lastReadings.get(sensor.id), 1, 1) + ' °C'}">22.5 °C</span>
+                                                <span th:if="${sensor.type == 'MOISTURE'}" th:text="${#numbers.formatDecimal(lastReadings.get(sensor.id), 1, 1) + ' %'}">45.2 %</span>
+                                            </span>
+                                            <span th:unless="${lastReadings != null && lastReadings.containsKey(sensor.id)}">N/A</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 15px; width: 100px;">
+                                                <div th:class="${'progress-bar ' + (sensor.batteryLevel >= 60 ? 'bg-success' : sensor.batteryLevel >= 30 ? 'bg-warning' : 'bg-danger')}" 
+                                                    role="progressbar" 
+                                                    th:style="${'width: ' + sensor.batteryLevel + '%'}" 
+                                                    th:text="${sensor.batteryLevel + '%'}">
+                                                    75%
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sensor.status == 'ACTIVE'}" class="badge bg-success">Активний</span>
+                                            <span th:if="${sensor.status == 'WARNING'}" class="badge bg-warning">Попередження</span>
+                                            <span th:if="${sensor.status == 'INACTIVE'}" class="badge bg-danger">Неактивний</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="btn btn-outline-primary" title="Перегляд">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/web/sensor/{id}/edit(id=${sensor.id})}" class="btn btn-outline-primary" title="Редагування">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${sensors.empty}" class="text-center p-4">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <p>На цій фермі ще немає датчиків. Додайте датчики для збору даних.</p>
+                                <a th:href="@{/web/farm/{id}/sensors/add(id=${farm.id})}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Додати датчик
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Датчики та карта ферми -->
+        <div class="row mb-4">
+            <!-- Список датчиків ферми -->
+            <div class="col-md-8 mb-4 mb-md-0">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-microchip me-2"></i> Датчики ферми</h5>
+                            <div class="input-group input-group-sm w-50">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="sensorSearchInput" placeholder="Пошук датчиків" onkeyup="filterTable(this.value, 'sensorsTable')">
+                                <a th:href="@{/web/sensor/create(farmId=${farm.id})}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped table-sm" id="sensorsTable">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Назва</th>
+                                        <th>Поле</th>
+                                        <th>Тип</th>
+                                        <th>Останні дані</th>
+                                        <th>Заряд</th>
+                                        <th>Статус</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="sensor : ${sensors}">
+                                        <td th:text="${sensor.id}">1</td>
+                                        <td>
+                                            <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" th:text="${sensor.name}" class="text-decoration-none fw-medium">Датчик 1</a>
+                                        </td>
+                                        <td>
+                                            <a th:if="${sensor.fieldId != null}" th:href="@{/web/field/{id}(id=${sensor.fieldId})}" th:text="${fieldNames.get(sensor.fieldId)}" class="text-decoration-none">Поле 1</a>
+                                            <span th:unless="${sensor.fieldId != null}" class="text-muted">Не призначено</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sensor.type == 'SOIL'}" class="badge bg-success">Ґрунт</span>
+                                            <span th:if="${sensor.type == 'AIR'}" class="badge bg-info">Повітря</span>
+                                            <span th:if="${sensor.type == 'WATER'}" class="badge bg-primary">Вода</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${lastReadings.containsKey(sensor.id)}" th:text="${#numbers.formatDecimal(lastReadings.get(sensor.id), 1, 1)}">22.5</span>
+                                            <span th:unless="${lastReadings.containsKey(sensor.id)}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress" style="height: 6px; width: 60px;" data-bs-toggle="tooltip" th:title="${sensor.batteryLevel} + '%'">
+                                                <div class="progress-bar" role="progressbar" th:style="'width: ' + ${sensor.batteryLevel} + '%'" 
+                                                     th:classappend="${sensor.batteryLevel < 20 ? 'bg-danger' : (sensor.batteryLevel < 50 ? 'bg-warning' : 'bg-success')}"></div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:if="${sensor.status == 'ACTIVE'}" class="badge bg-success">Активний</span>
+                                            <span th:if="${sensor.status == 'INACTIVE'}" class="badge bg-danger">Неактивний</span>
+                                            <span th:if="${sensor.status == 'WARNING'}" class="badge bg-warning">Увага</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Деталі">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/web/sensor/{id}/edit(id=${sensor.id})}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Редагувати">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Видалити">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(sensors)}">
+                                        <td colspan="8" class="text-center py-4">
+                                            <i class="fas fa-microchip fa-2x text-muted mb-3"></i>
+                                            <p class="mb-0">На цій фермі ще немає датчиків.</p>
+                                            <p class="mb-0">
+                                                <a th:href="@{/web/sensor/create(farmId=${farm.id})}" class="btn btn-sm btn-primary mt-2">
+                                                    <i class="fas fa-plus me-1"></i> Додати датчик
+                                                </a>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Карта ферми -->
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-map-marked-alt me-2"></i> Карта ферми</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="map-placeholder" style="height: 300px; background-color: #e9ecef;">
+                            <!-- В реальному додатку тут буде карта з Google Maps / Leaflet / OpenStreetMap -->
+                            <div class="text-center py-5">
+                                <i class="fas fa-map fa-4x text-muted my-4"></i>
+                                <p class="mb-0">Карта ферми буде відображена тут</p>
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h6 class="mb-2">Умовні позначення</h6>
+                            <div class="d-flex gap-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="status-indicator status-active me-2"></div>
+                                    <span>Активні датчики</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="status-indicator status-warning me-2"></div>
+                                    <span>Потребують уваги</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="status-indicator status-inactive me-2"></div>
+                                    <span>Неактивні</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контейнер для повідомлень -->
+        <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+    </div>
+    
+    <!-- Підвал сторінки -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+    
+    <!-- JavaScript -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script th:inline="javascript">
+        // Після завантаження сторінки
+        document.addEventListener('DOMContentLoaded', function() {
+            // Налаштування кнопки оновлення даних
+            const refreshBtn = document.getElementById('refreshDataButton');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    const farmId = /*[[${farm.id}]]*/ '1';
+                    refreshData('/farm/' + farmId, function() {
+                        // Оновлення після отримання даних
+                        showToast('Дані оновлено успішно', 'success');
+                    });
+                });
+            }
+            
+            // Ініціалізація tooltip для прогрес-барів
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ініціалізація графіка даних ферми
+            initFarmDataChart();
+            
+            // Обробка натискання на кнопки періоду для графіків
+            const periodButtons = document.querySelectorAll('.period-btn');
+            periodButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Зняття активного класу з усіх кнопок
+                    periodButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Додавання активного класу до натиснутої кнопки
+                    this.classList.add('active');
+                    
+                    // Оновлення графіків відповідно до вибраного періоду
+                    const period = this.getAttribute('data-period');
+                    updateChartByPeriod(period);
+                });
+            });
+            
+            // Пошук по полях
+            const fieldSearch = document.getElementById('fieldSearch');
+            if (fieldSearch) {
+                fieldSearch.addEventListener('input', function() {
+                    filterTable(this.value, 'fields');
+                });
+            }
+            
+            // Пошук по датчиках
+            const sensorSearch = document.getElementById('sensorSearch');
+            if (sensorSearch) {
+                sensorSearch.addEventListener('input', function() {
+                    filterTable(this.value, 'sensors');
+                });
+            }
+            
+            // Обробка кнопки оновлення даних
+            const refreshButton = document.getElementById('refreshDataButton');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', function() {
+                    refreshData();
+                });
+            }
+        });
+        
+        // Ініціалізація графіка даних ферми
+        function initFarmDataChart() {
+            const ctx = document.getElementById('farmDataChart').getContext('2d');
+            
+            // Генерація тестових даних за останні 24 години
+            const labels = [];
+            const temperatureData = [];
+            const moistureData = [];
+            
+            const now = new Date();
+            for (let i = 0; i < 24; i++) {
+                const date = new Date(now);
+                date.setHours(date.getHours() - 23 + i);
+                labels.push(date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }));
+                
+                // Випадкові дані для температури (від 18 до 26)
+                temperatureData.push(18 + Math.random() * 8);
+                
+                // Випадкові дані для вологості (від 40 до 60)
+                moistureData.push(40 + Math.random() * 20);
+            }
+            
+            // Створення графіка
+            window.farmDataChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Середня температура (°C)',
+                            data: temperatureData,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y-temperature'
+                        },
+                        {
+                            label: 'Середня вологість (%)',
+                            data: moistureData,
+                            borderColor: '#4dabf7',
+                            backgroundColor: 'rgba(77, 171, 247, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.4,
+                            yAxisID: 'y-moisture'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        'y-temperature': {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Температура (°C)'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        'y-moisture': {
+                            type: 'linear',
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Вологість (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Оновлення графіка за періодом
+        function updateChartByPeriod(period) {
+            // Створюємо нові тестові дані
+            let labels = [];
+            let temperatureData = [];
+            let moistureData = [];
+            
+            const now = new Date();
+            let dataPoints = 0;
+            let format = {};
+            
+            // Визначаємо кількість точок і формат дати залежно від періоду
+            if (period === 'day') {
+                dataPoints = 24; // 24 години
+                format = { hour: '2-digit', minute: '2-digit' };
+                
+                for (let i = 0; i < dataPoints; i++) {
+                    const date = new Date(now);
+                    date.setHours(date.getHours() - (dataPoints - 1) + i);
+                    labels.push(date.toLocaleTimeString('uk-UA', format));
+                    
+                    // Випадкові дані для температури і вологості
+                    temperatureData.push(18 + Math.random() * 8);
+                    moistureData.push(40 + Math.random() * 20);
+                }
+            } else if (period === 'week') {
+                dataPoints = 7; // 7 днів
+                format = { weekday: 'short', day: 'numeric' };
+                
+                for (let i = 0; i < dataPoints; i++) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - (dataPoints - 1) + i);
+                    labels.push(date.toLocaleDateString('uk-UA', format));
+                    
+                    // Випадкові дані для температури і вологості
+                    temperatureData.push(18 + Math.random() * 8);
+                    moistureData.push(40 + Math.random() * 20);
+                }
+            } else if (period === 'month') {
+                dataPoints = 30; // 30 днів
+                format = { day: 'numeric', month: 'short' };
+                
+                for (let i = 0; i < dataPoints; i++) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - (dataPoints - 1) + i);
+                    labels.push(date.toLocaleDateString('uk-UA', format));
+                    
+                    // Випадкові дані для температури і вологості
+                    temperatureData.push(18 + Math.random() * 8);
+                    moistureData.push(40 + Math.random() * 20);
+                }
+            }
+            
+            // Оновлення даних графіка
+            window.farmDataChart.data.labels = labels;
+            window.farmDataChart.data.datasets[0].data = temperatureData;
+            window.farmDataChart.data.datasets[1].data = moistureData;
+            window.farmDataChart.update();
+        }
+        
+        // Фільтрація таблиці (полів або датчиків) за пошуковим запитом
+        function filterTable(query, tableType) {
+            query = query.toLowerCase();
+            
+            const tableRows = tableType === 'fields' ? 
+                document.querySelectorAll('table tbody tr') : 
+                document.querySelectorAll('table:last-of-type tbody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Оновлення даних
+        function refreshData() {
+            // Показ індикатора завантаження
+            const refreshButton = document.getElementById('refreshDataButton');
+            const refreshSpinner = document.getElementById('refreshSpinner');
+            
+            if (refreshButton && refreshSpinner) {
+                refreshButton.disabled = true;
+                refreshSpinner.classList.remove('d-none');
+            }
+            
+            // Імітація AJAX-запиту для оновлення даних
+            setTimeout(() => {
+                // В реальному додатку тут буде AJAX-запит і оновлення даних
+                
+                // Оновлення графіка з новими даними
+                updateChartByPeriod('day'); // Оновлюємо графік з даними за день
+                
+                // Оновлення часу останньої синхронізації
+                const dataTimestamp = document.getElementById('dataTimestamp');
+                if (dataTimestamp) {
+                    const now = new Date();
+                    dataTimestamp.textContent = now.toLocaleDateString('uk-UA') + ' ' + now.toLocaleTimeString('uk-UA');
+                }
+                
+                // Приховання індикатора завантаження
+                if (refreshButton && refreshSpinner) {
+                    refreshButton.disabled = false;
+                    refreshSpinner.classList.add('d-none');
+                }
+                
+                // Відображення повідомлення про успішне оновлення
+                showToast('Дані оновлено', 'success');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

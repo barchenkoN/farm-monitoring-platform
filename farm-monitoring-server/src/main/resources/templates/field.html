@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Інформація про поле')">
+</head>
+<body>
+    <!-- Навігаційна панель -->
+    <nav th:replace="fragments/layout :: navbar"></nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a th:href="@{/web}">Головна</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/web/fields}">Поля</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" th:text="${field.name}">Поле 1</li>
+                    </ol>
+                </nav>
+                <h1 th:text="${field.name}">Поле 1</h1>
+                <p class="text-muted">
+                    <i class="fas fa-sync me-1"></i> Остання синхронізація: 
+                    <span id="dataTimestamp" th:text="${now}"></span>
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="btn-group mb-2">
+                    <button id="refreshDataButton" class="btn btn-outline-primary">
+                        <i class="fas fa-sync-alt me-1"></i> Оновити дані
+                        <span id="refreshSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                    <a th:href="@{/web/field/{id}/edit(id=${field.id})}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i> Редагувати
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i> Дії
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-map-marked-alt me-1"></i> Редагувати межі поля</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-file-export me-1"></i> Експорт даних</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-print me-1"></i> Друк звіту</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-1"></i> Видалити поле</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Інформаційні картки -->
+        <div class="row mb-4">
+            <!-- Карта поля -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-map-marked-alt me-2"></i> Карта поля</h5>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary map-type-btn active" data-map-type="satellite">Супутник</button>
+                                <button type="button" class="btn btn-outline-secondary map-type-btn" data-map-type="hybrid">Гібрид</button>
+                                <button type="button" class="btn btn-outline-secondary map-type-btn" data-map-type="terrain">Рельєф</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0 position-relative">
+                        <div class="map-placeholder" style="height: 300px; background-color: #e9ecef;">
+                            <!-- В реальному додатку тут буде карта з Google Maps / Leaflet / OpenStreetMap -->
+                            <div class="text-center py-5">
+                                <i class="fas fa-map fa-4x text-muted my-4"></i>
+                                <p class="mb-0">Карта поля буде відображена тут</p>
+                            </div>
+                        </div>
+                        <div class="card-img-overlay d-flex align-items-start justify-content-end" style="pointer-events: none;">
+                            <div class="bg-white rounded shadow-sm p-2" style="pointer-events: auto;">
+                                <p class="mb-1"><i class="fas fa-ruler me-2 text-primary"></i> <strong>Площа:</strong> <span th:text="${field.area}">5.8</span> га</p>
+                                <p class="mb-0"><i class="fas fa-map-marker-alt me-2 text-danger"></i> <strong>GPS:</strong> <span th:text="${field.latitude} + ', ' + ${field.longitude}">50.450001, 30.523333</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Статус поля -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i> Інформація про поле</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div th:class="'field-status-indicator ' + ${field.status.toLowerCase()}" data-bs-toggle="tooltip" th:title="'Статус: ' + ${field.status}">
+                                    <i class="fas fa-leaf fa-3x"></i>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <table class="table table-sm field-info-table">
+                                    <tr>
+                                        <th>Ферма:</th>
+                                        <td><a th:href="@{/web/farm/{id}(id=${field.farmId})}" th:text="${field.farmName}">Ферма Сонячна</a></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Культура:</th>
+                                        <td><span th:text="${field.cropType}">Пшениця</span></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Стан:</th>
+                                        <td>
+                                            <span th:if="${field.status == 'ACTIVE'}" class="badge bg-success">Активне</span>
+                                            <span th:if="${field.status == 'INACTIVE'}" class="badge bg-danger">Неактивне</span>
+                                            <span th:if="${field.status == 'MAINTENANCE'}" class="badge bg-warning">Обслуговування</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Кількість датчиків:</th>
+                                        <td><span th:text="${sensors.size()}">3</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Середні значення датчиків -->
+                        <div class="d-flex justify-content-around text-center">
+                            <div class="p-2">
+                                <div class="d-inline-flex justify-content-center align-items-center mb-2 p-3 rounded-circle bg-light">
+                                    <i class="fas fa-thermometer-half fa-2x text-temperature"></i>
+                                </div>
+                                <h4 class="mb-0" th:text="${#numbers.formatDecimal(avgTemperature, 1, 1)} + ' °C'">22.5 °C</h4>
+                                <p class="text-muted mb-0">Середня температура</p>
+                            </div>
+                            <div class="p-2">
+                                <div class="d-inline-flex justify-content-center align-items-center mb-2 p-3 rounded-circle bg-light">
+                                    <i class="fas fa-tint fa-2x text-moisture"></i>
+                                </div>
+                                <h4 class="mb-0" th:text="${#numbers.formatDecimal(avgMoisture, 1, 1)} + ' %'">48.2 %</h4>
+                                <p class="text-muted mb-0">Середня вологість</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Інформаційні картки -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Основна інформація</h5>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm field-info-table">
+                                    <tr>
+                                        <th><i class="fas fa-map-marker-alt text-primary me-2"></i> Ферма:</th>
+                                        <td>
+                                            <a th:href="@{/web/farm/{id}(id=${field.farmId})}" th:text="${field.farmName}">Ферма Сонячна</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-ruler-combined text-primary me-2"></i> Площа:</th>
+                                        <td th:text="${field.area + ' га'}">120.5 га</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-mountain text-primary me-2"></i> Тип ґрунту:</th>
+                                        <td th:text="${field.soilType}">Чорнозем</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-seedling text-primary me-2"></i> Поточна культура:</th>
+                                        <td th:text="${field.currentCrop}">Пшениця</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm field-info-table">
+                                    <tr>
+                                        <th><i class="fas fa-microchip text-primary me-2"></i> Кількість датчиків:</th>
+                                        <td>
+                                            <span class="badge rounded-pill bg-primary" th:text="${sensors.size()}">8</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-thermometer-half text-primary me-2"></i> Середня температура:</th>
+                                        <td id="avgTemperature" th:text="${avgTemperature != null ? #numbers.formatDecimal(avgTemperature, 1, 1) + ' °C' : 'N/A'}">22.5 °C</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-tint text-primary me-2"></i> Середня вологість:</th>
+                                        <td id="avgMoisture" th:text="${avgMoisture != null ? #numbers.formatDecimal(avgMoisture, 1, 1) + ' %' : 'N/A'}">45.2 %</td>
+                                    </tr>
+                                    <tr>
+                                        <th><i class="fas fa-calendar-alt text-primary me-2"></i> Останнє оновлення:</th>
+                                        <td th:text="${lastUpdated != null ? #temporals.format(lastUpdated, 'dd.MM.yyyy HH:mm:ss') : 'N/A'}">01.05.2025 12:34:56</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Статус поля</h5>
+                        <div class="mt-3 text-center">
+                            <div th:if="${field.status == 'ACTIVE'}" class="field-status-indicator active mb-3">
+                                <i class="fas fa-check-circle fa-4x"></i>
+                            </div>
+                            <div th:if="${field.status == 'WARNING'}" class="field-status-indicator warning mb-3">
+                                <i class="fas fa-exclamation-circle fa-4x"></i>
+                            </div>
+                            <div th:if="${field.status == 'INACTIVE'}" class="field-status-indicator inactive mb-3">
+                                <i class="fas fa-times-circle fa-4x"></i>
+                            </div>
+                            <h5 th:if="${field.status == 'ACTIVE'}" class="text-success">Активне</h5>
+                            <h5 th:if="${field.status == 'WARNING'}" class="text-warning">Потребує уваги</h5>
+                            <h5 th:if="${field.status == 'INACTIVE'}" class="text-danger">Неактивне</h5>
+                            <p class="mb-0 text-muted" th:if="${field.status == 'ACTIVE'}">
+                                Усі системи працюють нормально. Показники в межах норми.
+                            </p>
+                            <p class="mb-0 text-muted" th:if="${field.status == 'WARNING'}">
+                                Виявлено відхилення показників. Рекомендуємо перевірити стан датчиків.
+                            </p>
+                            <p class="mb-0 text-muted" th:if="${field.status == 'INACTIVE'}">
+                                Поле не моніторується. Датчики не передають дані.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Карта поля -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-map me-2"></i> Карта поля</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary map-type-btn active" data-type="satellite">
+                                <i class="fas fa-satellite"></i> Супутник
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary map-type-btn" data-type="terrain">
+                                <i class="fas fa-mountain"></i> Рельєф
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary map-type-btn" data-type="heatmap">
+                                <i class="fas fa-fire"></i> Теплова карта
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="fieldMap" style="height: 400px; width: 100%;">
+                            <!-- Тут буде відображатися карта (через JavaScript) -->
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Завантаження...</span>
+                                </div>
+                                <p class="text-muted mt-2">Завантаження карти поля...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Датчики та графіки -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i> Датчики на полі</h5>
+                        <a th:href="@{/web/field/{id}/sensors/add(id=${field.id})}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a th:each="sensor : ${sensors}" th:href="@{/web/sensor/{id}(id=${sensor.id})}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between align-items-center">
+                                    <div>
+                                        <span th:if="${sensor.type == 'TEMPERATURE'}" class="sensor-icon temperature me-2">
+                                            <i class="fas fa-thermometer-half"></i>
+                                        </span>
+                                        <span th:if="${sensor.type == 'MOISTURE'}" class="sensor-icon moisture me-2">
+                                            <i class="fas fa-tint"></i>
+                                        </span>
+                                        <span th:text="${sensor.name}">Датчик 1</span>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <span th:if="${sensor.status == 'ACTIVE'}" class="status-indicator status-active" title="Активний"></span>
+                                            <span th:if="${sensor.status == 'WARNING'}" class="status-indicator status-warning" title="Попередження"></span>
+                                            <span th:if="${sensor.status == 'INACTIVE'}" class="status-indicator status-inactive" title="Неактивний"></span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <div th:if="${sensor.type == 'TEMPERATURE'}">
+                                                <span th:if="${sensorTemperatures.containsKey(sensor.id)}" th:text="${#numbers.formatDecimal(sensorTemperatures.get(sensor.id), 1, 1) + ' °C'}">22.5 °C</span>
+                                                <span th:unless="${sensorTemperatures.containsKey(sensor.id)}">N/A</span>
+                                            </div>
+                                            <div th:if="${sensor.type == 'MOISTURE'}">
+                                                <span th:if="${sensorMoistures.containsKey(sensor.id)}" th:text="${#numbers.formatDecimal(sensorMoistures.get(sensor.id), 1, 1) + ' %'}">45.2 %</span>
+                                                <span th:unless="${sensorMoistures.containsKey(sensor.id)}">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                            <div th:if="${sensors.empty}" class="text-center p-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                    <p>На цьому полі ще немає датчиків. Додайте датчики для збору даних.</p>
+                                    <a th:href="@{/web/field/{id}/sensors/add(id=${field.id})}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus me-1"></i> Додати датчик
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i> Тренди</h5>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-secondary period-btn active" data-period="day">День</button>
+                            <button type="button" class="btn btn-outline-secondary period-btn" data-period="week">Тиждень</button>
+                            <button type="button" class="btn btn-outline-secondary period-btn" data-period="month">Місяць</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs" id="fieldDataTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="temperature-tab" data-bs-toggle="tab" data-bs-target="#temperature" type="button" role="tab" aria-controls="temperature" aria-selected="true">
+                                    <i class="fas fa-thermometer-half me-1 text-temperature"></i> Температура
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="moisture-tab" data-bs-toggle="tab" data-bs-target="#moisture" type="button" role="tab" aria-controls="moisture" aria-selected="false">
+                                    <i class="fas fa-tint me-1 text-moisture"></i> Вологість
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-3" id="fieldDataTabsContent">
+                            <div class="tab-pane fade show active" id="temperature" role="tabpanel" aria-labelledby="temperature-tab">
+                                <div class="chart-container">
+                                    <canvas id="temperatureChart" 
+                                        th:data-labels="${temperatureChartLabels != null ? temperatureChartLabels : '[]'}"
+                                        th:data-values="${temperatureChartValues != null ? temperatureChartValues : '[]'}"></canvas>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="moisture" role="tabpanel" aria-labelledby="moisture-tab">
+                                <div class="chart-container">
+                                    <canvas id="moistureChart"
+                                        th:data-labels="${moistureChartLabels != null ? moistureChartLabels : '[]'}"
+                                        th:data-values="${moistureChartValues != null ? moistureChartValues : '[]'}"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нотатки та задачі -->
+        <div class="row mb-4">
+            <!-- Нотатки поля -->
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-clipboard me-2"></i> Нотатки поля</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                                <i class="fas fa-plus me-1"></i> Додати нотатку
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="field-note mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Стан посівів</h6>
+                                <small class="text-muted">10.05.2025</small>
+                            </div>
+                            <p class="mb-0">Посіви пшениці знаходяться в хорошому стані. Спостерігається нормальний ріст, паростки зелені та міцні.</p>
+                        </div>
+                        <div class="field-note mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Внесення добрив</h6>
+                                <small class="text-muted">05.05.2025</small>
+                            </div>
+                            <p class="mb-0">Проведено внесення добрив відповідно до плану. Використано NPK 16-16-16 з розрахунку 200 кг/га.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Задачі для поля -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0"><i class="fas fa-tasks me-2"></i> Задачі для поля</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                                <i class="fas fa-plus me-1"></i> Додати задачу
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="field-task mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Полив ділянки</h6>
+                                <span class="badge bg-warning">Заплановано</span>
+                            </div>
+                            <p class="mb-2">Провести полив центральної ділянки поля в денні години.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Виконати до: 15.05.2025</small>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success" data-bs-toggle="tooltip" title="Виконано">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Видалити">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field-task mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">Інспекція датчиків</h6>
+                                <span class="badge bg-success">Виконано</span>
+                            </div>
+                            <p class="mb-2">Перевірити стан датчиків на північній ділянці поля.</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Виконано: 08.05.2025</small>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" data-bs-toggle="tooltip" title="Відновити">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Видалити">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контейнер для повідомлень -->
+        <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+        
+        <!-- Модальне вікно для додавання нотатки -->
+        <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNoteModalLabel">Додати нову нотатку</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addNoteForm">
+                            <div class="mb-3">
+                                <label for="noteTitle" class="form-label">Заголовок</label>
+                                <input type="text" class="form-control" id="noteTitle" placeholder="Введіть заголовок нотатки" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="noteContent" class="form-label">Текст нотатки</label>
+                                <textarea class="form-control" id="noteContent" rows="4" placeholder="Введіть текст нотатки" required></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                        <button type="button" class="btn btn-primary" onclick="addNote()">Зберегти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальне вікно для додавання задачі -->
+        <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addTaskModalLabel">Додати нову задачу</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addTaskForm">
+                            <div class="mb-3">
+                                <label for="taskTitle" class="form-label">Назва задачі</label>
+                                <input type="text" class="form-control" id="taskTitle" placeholder="Введіть назву задачі" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskDescription" class="form-label">Опис задачі</label>
+                                <textarea class="form-control" id="taskDescription" rows="3" placeholder="Введіть опис задачі" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskDueDate" class="form-label">Виконати до</label>
+                                <input type="date" class="form-control" id="taskDueDate" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="taskPriority" class="form-label">Пріоритет</label>
+                                <select class="form-select" id="taskPriority" required>
+                                    <option value="LOW">Низький</option>
+                                    <option value="MEDIUM" selected>Середній</option>
+                                    <option value="HIGH">Високий</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                        <button type="button" class="btn btn-primary" onclick="addTask()">Зберегти</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Підвал сторінки -->
+    <footer th:replace="fragments/layout :: footer"></footer>
+    
+    <!-- JavaScript -->
+    <th:block th:replace="fragments/layout :: scripts"></th:block>
+    
+    <script th:inline="javascript">
+        // Після завантаження сторінки
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ініціалізація графіків
+            initFieldCharts();
+            
+            // Налаштування кнопки оновлення даних
+            const refreshBtn = document.getElementById('refreshDataButton');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    const fieldId = /*[[${field.id}]]*/ '1';
+                    refreshData('/field/' + fieldId, function() {
+                        // Оновлення графіків після отримання даних
+                        updateFieldCharts();
+                    });
+                });
+            }
+            
+            // Налаштування перемикачів періодів для графіків
+            setupPeriodButtons();
+        });
+        
+        // Ініціалізація графіків на сторінці
+        function initFieldCharts() {
+            // Дані для графіків
+            const tempLabels = /*[[${temperatureChartLabels}]]*/ '[]';
+            const tempValues = /*[[${temperatureChartValues}]]*/ '[]';
+            const moistLabels = /*[[${moistureChartLabels}]]*/ '[]';
+            const moistValues = /*[[${moistureChartValues}]]*/ '[]';
+            
+            // Графік температури
+            const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+            window.temperatureChart = new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: JSON.parse(tempLabels),
+                    datasets: [{
+                        label: 'Температура (°C)',
+                        data: JSON.parse(tempValues),
+                        borderColor: 'rgb(255, 107, 107)',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toFixed(1) + ' °C';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Температура (°C)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Час'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Графік вологості
+            const moistCtx = document.getElementById('moistureChart').getContext('2d');
+            window.moistureChart = new Chart(moistCtx, {
+                type: 'line',
+                data: {
+                    labels: JSON.parse(moistLabels),
+                    datasets: [{
+                        label: 'Вологість (%)',
+                        data: JSON.parse(moistValues),
+                        borderColor: 'rgb(77, 171, 247)',
+                        backgroundColor: 'rgba(77, 171, 247, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toFixed(1) + ' %';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Вологість (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Час'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Оновлення графіків з новими даними
+        function updateFieldCharts() {
+            // В реальному додатку тут буде запит на сервер для отримання нових даних
+            // Зараз просто імітуємо оновлення випадковими даними
+            
+            // Випадкові дані для демонстрації
+            const tempData = window.temperatureChart.data.datasets[0].data;
+            const moistData = window.moistureChart.data.datasets[0].data;
+            
+            // Оновлення даних з випадковими варіаціями
+            for (let i = 0; i < tempData.length; i++) {
+                tempData[i] = tempData[i] + (Math.random() * 2 - 1); // ±1 градус
+                moistData[i] = moistData[i] + (Math.random() * 4 - 2); // ±2%
+            }
+            
+            // Оновлення графіків
+            window.temperatureChart.update();
+            window.moistureChart.update();
+        }
+        
+        // Налаштування кнопок вибору періоду
+        function setupPeriodButtons() {
+            const periodBtns = document.querySelectorAll('.period-btn');
+            periodBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Зняття активного стану з усіх кнопок
+                    periodBtns.forEach(b => b.classList.remove('active'));
+                    
+                    // Активація натиснутої кнопки
+                    this.classList.add('active');
+                    
+                    // Зміна періоду даних (в реальному додатку тут буде запит на сервер)
+                    // Зараз просто показуємо повідомлення
+                    const period = this.getAttribute('data-period');
+                    showToast(`Обрано період: ${period}`, 'info');
+                    
+                    // Імітація оновлення даних
+                    setTimeout(() => {
+                        updateFieldCharts();
+                    }, 500);
+                });
+            });
+        }
+        
+        // Додавання нової нотатки
+        function addNote() {
+            const title = document.getElementById('noteTitle').value;
+            const content = document.getElementById('noteContent').value;
+            
+            if (!title || !content) {
+                showToast('Заповніть всі поля форми', 'danger');
+                return;
+            }
+            
+            // В реальному додатку тут буде запит на сервер для збереження нотатки
+            // Зараз просто імітуємо додавання
+            
+            // Закриття модального вікна
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addNoteModal'));
+            modal.hide();
+            
+            // Очищення форми
+            document.getElementById('addNoteForm').reset();
+            
+            // Повідомлення про успішне додавання
+            showToast('Нотатку успішно додано', 'success');
+        }
+        
+        // Додавання нової задачі
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            
+            if (!title || !description || !dueDate) {
+                showToast('Заповніть всі поля форми', 'danger');
+                return;
+            }
+            
+            // В реальному додатку тут буде запит на сервер для збереження задачі
+            // Зараз просто імітуємо додавання
+            
+            // Закриття модального вікна
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+            modal.hide();
+            
+            // Очищення форми
+            document.getElementById('addTaskForm').reset();
+            
+            // Повідомлення про успішне додавання
+            showToast('Задачу успішно додано', 'success');
+        }
+    </script>
+</body>
+</html>
