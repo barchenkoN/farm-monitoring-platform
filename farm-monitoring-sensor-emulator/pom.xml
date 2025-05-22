@@ -11,8 +11,7 @@
 
     <artifactId>farm-monitoring-sensor-emulator</artifactId>
 
-    <dependencies>
-        <!-- HTTP Client -->
+    <dependencies>        <!-- HTTP Client -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -20,10 +19,26 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-        </dependency>
+        </dependency>        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+        </dependency>
+        
+        <!-- Actuator for health checks -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+        <!-- Jakarta EE -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
 
         <!-- Lombok -->

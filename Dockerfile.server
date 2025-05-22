@@ -2,22 +2,36 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
+# Copy pom files first for dependency resolution
 COPY pom.xml .
 COPY farm-monitoring-server/pom.xml ./farm-monitoring-server/
 COPY farm-monitoring-sensor-emulator/pom.xml ./farm-monitoring-sensor-emulator/
 
+# Create dummy source files to force dependency resolution
+RUN mkdir -p farm-monitoring-server/src/main/java && \
+    mkdir -p farm-monitoring-sensor-emulator/src/main/java && \
+    touch farm-monitoring-server/src/main/java/DummyClass.java && \
+    touch farm-monitoring-sensor-emulator/src/main/java/DummyClass.java
+
+# Download dependencies
 RUN mvn dependency:go-offline -B
 
-COPY . .
+# Copy source files
+COPY farm-monitoring-server/src ./farm-monitoring-server/src
+COPY farm-monitoring-sensor-emulator/src ./farm-monitoring-sensor-emulator/src
 
-RUN mvn package -DskipTests
+# Build the server project only
+RUN mvn clean package -DskipTests -pl farm-monitoring-server
 
 FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/farm-monitoring-server/target/farm-monitoring-server-*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"] 
+ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=docker"] 

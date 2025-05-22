@@ -22,18 +22,18 @@ VALUES
 (4, 'Sensor-T4', 'TEMPERATURE', 50.4801, 30.5534, 70, 'ACTIVE'),
 (4, 'Sensor-M4', 'MOISTURE', 50.4802, 30.5535, 92, 'ACTIVE');
 
--- Insert some initial sensor readings (using H2-compatible timestamp syntax)
+-- Insert some initial sensor readings (using PostgreSQL-compatible timestamp syntax)
 INSERT INTO sensor_reading (sensor_id, reading_type, reading_value, unit, timestamp) 
 VALUES 
-(1, 'TEMPERATURE', 22.5, 'Celsius', DATEADD('HOUR', -1, CURRENT_TIMESTAMP())),
-(1, 'TEMPERATURE', 23.1, 'Celsius', DATEADD('MINUTE', -30, CURRENT_TIMESTAMP())),
-(1, 'TEMPERATURE', 23.8, 'Celsius', CURRENT_TIMESTAMP()),
-(2, 'MOISTURE', 42.3, 'Percent', DATEADD('HOUR', -1, CURRENT_TIMESTAMP())),
-(2, 'MOISTURE', 41.8, 'Percent', DATEADD('MINUTE', -30, CURRENT_TIMESTAMP())),
-(2, 'MOISTURE', 40.5, 'Percent', CURRENT_TIMESTAMP()),
-(3, 'TEMPERATURE', 21.7, 'Celsius', DATEADD('HOUR', -1, CURRENT_TIMESTAMP())),
-(3, 'TEMPERATURE', 22.4, 'Celsius', DATEADD('MINUTE', -30, CURRENT_TIMESTAMP())),
-(3, 'TEMPERATURE', 22.9, 'Celsius', CURRENT_TIMESTAMP()),
-(4, 'MOISTURE', 38.2, 'Percent', DATEADD('HOUR', -1, CURRENT_TIMESTAMP())),
-(4, 'MOISTURE', 39.1, 'Percent', DATEADD('MINUTE', -30, CURRENT_TIMESTAMP())),
-(4, 'MOISTURE', 40.3, 'Percent', CURRENT_TIMESTAMP()); 
+(1, 'TEMPERATURE', 22.5, 'Celsius', NOW() - INTERVAL '1 HOUR'),
+(1, 'TEMPERATURE', 23.1, 'Celsius', NOW() - INTERVAL '30 MINUTES'),
+(1, 'TEMPERATURE', 23.8, 'Celsius', NOW()),
+(2, 'MOISTURE', 42.3, 'Percent', NOW() - INTERVAL '1 HOUR'),
+(2, 'MOISTURE', 41.8, 'Percent', NOW() - INTERVAL '30 MINUTES'),
+(2, 'MOISTURE', 40.5, 'Percent', NOW()),
+(3, 'TEMPERATURE', 21.7, 'Celsius', NOW() - INTERVAL '1 HOUR'),
+(3, 'TEMPERATURE', 22.4, 'Celsius', NOW() - INTERVAL '30 MINUTES'),
+(3, 'TEMPERATURE', 22.9, 'Celsius', NOW()),
+(4, 'MOISTURE', 38.2, 'Percent', NOW() - INTERVAL '1 HOUR'),
+(4, 'MOISTURE', 39.1, 'Percent', NOW() - INTERVAL '30 MINUTES'),
+(4, 'MOISTURE', 40.3, 'Percent', NOW());

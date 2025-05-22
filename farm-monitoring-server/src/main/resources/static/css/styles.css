@@ -20,6 +20,21 @@ body {
     color: #333;
     background-color: #f5f7fa;
     line-height: 1.6;
+    opacity: 1 !important;
+}
+
+/* Примусові стилі для видимості тексту */
+h1, h2, h3, h4, h5, h6, 
+p, div, span, a, input, 
+select, textarea, label, 
+button, li {
+    color: #212529;
+}
+
+input, select, textarea {
+    background-color: #fff;
+    color: #212529;
+    border: 1px solid #ced4da;
 }
 
 /* Improved card styles */
@@ -29,6 +44,7 @@ body {
     transition: transform var(--transition-speed), box-shadow var(--transition-speed);
     border: 1px solid rgba(0,0,0,0.08);
     overflow: hidden;
+    background-color: #fff;
 }
 
 .card:hover {
@@ -39,6 +55,7 @@ body {
     background-color: rgba(0,0,0,0.02);
     border-bottom: 1px solid rgba(0,0,0,0.05);
     font-weight: 500;
+    color: #212529;
 }
 
 /* Sensor cards */
@@ -47,6 +64,7 @@ body {
     border-left: 5px solid transparent;
     overflow: hidden;
     position: relative;
+    background-color: #fff;
 }
 
 .sensor-card.temperature {
@@ -89,6 +107,7 @@ body {
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: #fff;
 }
 
 .btn-primary:hover {
@@ -225,6 +244,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 10;
+    color: #212529;
 }
 
 .table tbody tr {
@@ -374,6 +394,7 @@ body {
 /* Page transitions */
 .page-transition {
     transition: opacity 0.3s ease;
+    opacity: 1;
 }
 
 .page-transition.fade-out {
@@ -426,4 +447,55 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus {
 /* Add smooth scrolling */
 html {
     scroll-behavior: smooth;
+}
+
+/* Спеціальні стилі для сповіщень */
+.alert-danger {
+    color: #721c24 !important;
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+}
+
+.alert-success {
+    color: #155724 !important;
+    background-color: #d4edda !important;
+    border-color: #c3e6cb !important;
+}
+
+/* Стилі для тексту з правильною контрастністю */
+.text-dark {
+    color: #212529 !important;
+}
+
+.text-white {
+    color: #fff !important;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.card-body {
+    color: #212529;
+}
+
+.navbar {
+    background-color: #343a40;
+}
+
+.navbar-brand, .nav-link {
+    color: #fff;
+}
+
+/* Стилі для навігаційних компонентів */
+.nav-item .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.nav-item .nav-link:hover {
+    color: #fff;
+}
+
+.bg-primary {
+    background-color: #0d6efd !important;
 }

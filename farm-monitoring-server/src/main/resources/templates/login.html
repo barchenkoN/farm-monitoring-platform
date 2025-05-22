@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Авторизація')">
+    <meta charset="UTF-8">
+    <title>Авторизація - Платформа моніторингу фермерських операцій</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body class="bg-light">
+    <!-- Додаткові стилі для сторінки логіна -->
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    
+    <!-- Примусові стилі для гарантії видимості на цій сторінці -->
+    <style>
+        body {
+            background-color: #f8f9fa !important;
+        }
+        
+        .card {
+            background-color: white !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        .card-header {
+            background-color: #0d6efd !important;
+        }
+        
+        .card-header h4 {
+            color: white !important;
+        }
+        
+        .card-body h5, .card-body label, .card-body p {
+            color: #212529 !important;
+        }
+        
+        .form-control {
+            background-color: white !important;
+            color: #212529 !important;
+            border: 1px solid #ced4da !important;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da !important;
+            color: #721c24 !important;
+            border-color: #f5c6cb !important;
+        }
+        
+        .alert-success {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border-color: #c3e6cb !important;
+        }
+        
+        .btn-primary {
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+        }
+        
+        code {
+            color: #e83e8c !important;
+        }
+    </style>
+    
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h4><i class="fas fa-leaf me-2"></i> Платформа моніторингу фермерських операцій</h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="card-title text-center mb-4 text-dark">Авторизація</h5>
+                        
+                        <!-- Використовуємо атрибути моделі замість параметрів запиту -->
+                        <div th:if="${error}" class="alert alert-danger login-alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> 
+                            <span th:text="${errorMessage}">Невірне ім'я користувача або пароль</span>
+                        </div>
+                        
+                        <!-- Підтримка старого способу для сумісності -->
+                        <div th:if="${param.error}" class="alert alert-danger login-alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i> 
+                            <span>Невірне ім'я користувача або пароль</span>
+                        </div>
+                        
+                        <div th:if="${logout}" class="alert alert-success login-alert">
+                            <i class="fas fa-check-circle me-2"></i> 
+                            <span th:text="${logoutMessage}">Ви успішно вийшли з системи</span>
+                        </div>
+                        
+                        <!-- Підтримка старого способу для сумісності -->
+                        <div th:if="${param.logout}" class="alert alert-success login-alert">
+                            <i class="fas fa-check-circle me-2"></i> 
+                            <span>Ви успішно вийшли з системи</span>
+                        </div>
+                        
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-dark">Ім'я користувача</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" autocomplete="username" autofocus required />
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-dark">Пароль</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" autocomplete="current-password" required />
+                                </div>
+                            </div>
+                              <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-2"></i> Увійти
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <hr class="flex-grow-1">
+                                <span class="mx-2 text-muted">або увійти через</span>
+                                <hr class="flex-grow-1">
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <a href="/oauth2/authorization/google" class="btn btn-outline-danger">
+                                    <i class="fab fa-google me-2"></i> Google
+                                </a>
+                                <a href="/oauth2/authorization/github" class="btn btn-outline-dark">
+                                    <i class="fab fa-github me-2"></i> GitHub
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center text-muted">
+                        <small>
+                            <p class="mb-0">Для демонстрації використовуйте:</p>
+                            <p class="mb-0">Логін: <code>admin</code> | Пароль: <code>admin</code></p>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

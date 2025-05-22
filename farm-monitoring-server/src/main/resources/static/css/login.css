@@ -1,0 +1,93 @@
+/* Стилі для сторінки логіна */
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+/* Забезпечення контрастності тексту */
+.text-dark {
+    color: #333 !important;
+}
+
+.card-title {
+    color: #333 !important;
+    font-weight: 500;
+}
+
+.form-label {
+    color: #333 !important;
+    font-weight: 500;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.card-footer {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: #333;
+}
+
+code {
+    color: #e83e8c;
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.bg-primary {
+    background-color: #28a745 !important;
+}
+
+.text-white {
+    color: #fff !important;
+}
+
+.btn-primary {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-outline-danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-outline-dark {
+    color: #343a40;
+    border-color: #343a40;
+}
+
+.btn-outline-dark:hover {
+    color: #fff;
+    background-color: #343a40;
+    border-color: #343a40;
+}
+
+.login-alert {
+    font-weight: 500;
+}
+
+body {
+    background-color: #f5f7fa;
+} 

@@ -54,6 +54,10 @@ public class SensorReadingController {
             log.debug("Успешно создано показание: {}", result);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("sensor")) {
+                // If the error is about a missing sensor, return 404
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
             log.error("Ошибка при создании показания: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {

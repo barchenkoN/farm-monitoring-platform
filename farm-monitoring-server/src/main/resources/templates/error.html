@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: head('Помилка')">
+    <meta charset="UTF-8">
+    <title>Помилка - Платформа моніторингу фермерських операцій</title>
+</head>
+<body class="bg-light">
+    <!-- Додаткові стилі для сторінки помилки -->
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-danger text-white text-center py-3">
+                        <h4><i class="fas fa-exclamation-triangle me-2"></i> Помилка</h4>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        
+                        <h2 class="card-title text-dark mb-3" th:text="${status} ?: 'Помилка'">404</h2>
+                        <p class="text-dark mb-4" th:text="${error} ?: 'Сталася помилка при виконанні запиту.'">Сторінку не знайдено</p>
+                        
+                        <div class="alert alert-danger" th:if="${message}">
+                            <i class="fas fa-info-circle me-2"></i> <span th:text="${message}">Детальна інформація про помилку</span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/login" class="btn btn-primary me-2">
+                                <i class="fas fa-sign-in-alt me-2"></i> На сторінку входу
+                            </a>
+                            <a href="/" class="btn btn-outline-secondary">
+                                <i class="fas fa-home me-2"></i> На головну
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted text-center">
+                        <small>Якщо проблема повторюється, зверніться до адміністратора системи</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
